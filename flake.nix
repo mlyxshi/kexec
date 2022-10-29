@@ -15,7 +15,7 @@
         "kexec" = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./image/kexec.nix
+            ./kexec.nix
             {
               system.stateVersion = stateVersion;
             }
