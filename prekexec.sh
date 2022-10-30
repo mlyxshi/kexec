@@ -1,5 +1,10 @@
 #! /usr/bin/env bash
 
+# delete old version
+rm bzImage
+rm initrd.gz
+rm kexec-boot 
+
 apt install -y wget kexec-tools
 
 wget https://github.com/mlyxshi/kexec/releases/download/latest/kexec-boot
