@@ -1,5 +1,5 @@
 # https://github.com/NickCao/netboot/blob/master/flake.nix
-{ pkgs, modulesPath, ... }: 
+{ pkgs, lib, config, modulesPath, ... }: 
 let
   # Usage: 
   # install github:mlyxshi/flake hk1 https://linkto/sops/key
@@ -51,11 +51,37 @@ in
   networking.firewall.enable = false;
 
   services.openssh.enable = true;
+  services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
   services.getty.autologinUser = "root";
 
-  users.users.root.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMpaY3LyCW4HHqbp4SA4tnA+1Bkgwrtro2s/DEsBcPDe"
-  ];
+  systemd.services.process-cmdline = {
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      export PATH=/run/current-system/sw/bin:$PATH
+      xargs -n1 -a /proc/cmdline | while read opt; do
+        if [[ $opt = sshkey=* ]]; then
+          echo "''${opt#sshkey=}" >> /run/authorized_keys
+        fi
+        if [[ $opt = script=* ]]; then
+          curl -L "''${opt#script=}" | ${pkgs.runtimeShell}
+        fi
+      done
+    '';
+  };
+
+
+  system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
+    #!/usr/bin/env bash
+    if ! kexec -v >/dev/null 2>&1; then
+      echo "kexec not found: please install kexec-tools" 2>&1
+      exit 1
+    fi
+    SCRIPT_DIR=$( cd -- "$( dirname -- "''${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    kexec --load ''${SCRIPT_DIR}/bzImage \
+      --initrd=''${SCRIPT_DIR}/initrd.gz \
+      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${1:+sshkey=''$1}  ''${2:+script=''$2}"
+    kexec -e
+  '');
 
 
   environment.systemPackages = [
