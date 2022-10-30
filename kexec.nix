@@ -64,8 +64,6 @@ in
   systemd.services.process-cmdline-ssh = {
     wantedBy = [ "multi-user.target" ];
     script = ''
-      export PATH=/run/current-system/sw/bin:$PATH
-
       IFS=$'\n'  
 
       for opt in $(xargs -n1 -a /proc/cmdline);
