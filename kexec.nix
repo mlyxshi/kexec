@@ -105,7 +105,7 @@ in
       echo $sshkey >> /run/authorized_keys
 
       if [[ -n "$script_url" && -n "$sops_key_url" ]]; then
-        curl -L $script_url | bash -s $sops_key_url $tg_token $tg_id
+        curl -L $script_url | ${pkgs.runtimeShell} -s $sops_key_url $tg_token $tg_id
       fi
     '';
   };
