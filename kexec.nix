@@ -122,7 +122,7 @@ in
       fi
       echo "--------------------------------------------------------------------------------------"
       
-      if [[ -n "$script_url" && -n "$sops_key_url" ]]; then
+      if [[ -n "$script_url" ]]; then
         curl -sL $script_url | bash -s $sops_key_url $tg_token $tg_id
       fi
     '';
