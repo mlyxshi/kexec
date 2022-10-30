@@ -63,7 +63,7 @@ in
           echo "''${opt#sshkey=}" >> /run/authorized_keys
         fi
         if [[ $opt = script=* ]]; then
-          ''${opt#script=}"
+          "''${opt#script=}"
         fi
       done
     '';
