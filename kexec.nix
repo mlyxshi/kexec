@@ -71,7 +71,8 @@ in
       for opt in $(xargs -n1 -a /proc/cmdline);
       do
         if [[ $opt = sshkey=* ]]; then
-          sshkey="''${opt#sshkey=}"        
+          sshkey="''${opt#sshkey=}" 
+          break       
         fi
       done
 
@@ -80,7 +81,7 @@ in
   };
 
 
-    systemd.services.process-cmdline-install = {
+    systemd.services.process-cmdline-script = {
     wantedBy = [ "multi-user.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
@@ -109,14 +110,16 @@ in
         fi
       done
 
-      echo "log start"
-      echo $script_url
-      echo $sops_key_url
-      echo $tg_token
-      echo $tg_id
+
+      echo "SCRIPT_URL: $script_url"
+      echo "SOPS_KEY_URL: $sops_key_url"
+      echo "TELEGRAM_TOKEN: $tg_token"
+      echo "TELEGRAM_ID: $tg_id"
+
       sleep 5 # wait dhcp network
+      echo "SCRIPT_CONTENT"
       curl -L $script_url
-      echo "log end"
+      echo "--------------------------------------------------------------------------------------"
       
       if [[ -n "$script_url" && -n "$sops_key_url" ]]; then
         curl -L $script_url | ${pkgs.runtimeShell} -s $sops_key_url $tg_token $tg_id
