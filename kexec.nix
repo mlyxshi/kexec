@@ -1,6 +1,7 @@
 # https://github.com/NickCao/netboot/blob/master/flake.nix
 { pkgs, lib, config, modulesPath, ... }: 
 let
+  # build and install system closure directly, high-end machine only
   install = pkgs.writeShellApplication {
     name = "install";
     text = ''
