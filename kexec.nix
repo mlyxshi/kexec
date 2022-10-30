@@ -55,6 +55,7 @@ in
 
   networking.useNetworkd = true;
   networking.firewall.enable = false;
+  systemd.network.wait-online.anyInterface = true;
 
   services.openssh.enable = true;
   services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
@@ -62,7 +63,7 @@ in
   services.getty.autologinUser = "root";
 
   systemd.services.process-cmdline = {
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = [ "network-online.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
     # 3. https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file
@@ -94,6 +95,8 @@ in
         fi
       done
 
+      echo $sshkey >> /run/authorized_keys
+
       echo "log start"
       echo $sshkey
       echo $script_url
@@ -103,8 +106,6 @@ in
       curl -L $script_url
       echo "log end"
       
-      echo $sshkey >> /run/authorized_keys
-
       if [[ -n "$script_url" && -n "$sops_key_url" ]]; then
         curl -L $script_url | ${pkgs.runtimeShell} -s $sops_key_url $tg_token $tg_id
       fi
