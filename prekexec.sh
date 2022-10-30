@@ -7,4 +7,4 @@ wget https://github.com/mlyxshi/kexec/releases/download/latest/initrd.gz
 wget https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
 
 chmod +x ./kexec-boot
-./kexec-boot ${1:+$1} ${2:+$2}
+./kexec-boot "${1:+$1}" "${2:+$2}"
