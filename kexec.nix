@@ -55,14 +55,32 @@ in
 
   networking.useNetworkd = true;
   networking.firewall.enable = false;
-  systemd.network.wait-online.anyInterface = true;
 
   services.openssh.enable = true;
   services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
 
   services.getty.autologinUser = "root";
 
-  systemd.services.process-cmdline = {
+  systemd.services.process-cmdline-ssh = {
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      export PATH=/run/current-system/sw/bin:$PATH
+
+      IFS=$'\n'  
+
+      for opt in $(xargs -n1 -a /proc/cmdline);
+      do
+        if [[ $opt = sshkey=* ]]; then
+          sshkey="''${opt#sshkey=}"        
+        fi
+      done
+
+      echo $sshkey >> /run/authorized_keys
+    '';
+  };
+
+
+    systemd.services.process-cmdline-install = {
     wantedBy = [ "multi-user.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
@@ -74,10 +92,6 @@ in
 
       for opt in $(xargs -n1 -a /proc/cmdline);
       do
-        if [[ $opt = sshkey=* ]]; then
-          sshkey="''${opt#sshkey=}"        
-        fi
-
         if [[ $opt = script_url=* ]]; then
           script_url="''${opt#script_url=}"
         fi
@@ -95,10 +109,7 @@ in
         fi
       done
 
-      echo $sshkey >> /run/authorized_keys
-
       echo "log start"
-      echo $sshkey
       echo $script_url
       echo $sops_key_url
       echo $tg_token
