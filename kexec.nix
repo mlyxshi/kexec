@@ -47,15 +47,24 @@ in
     supportedFilesystems = [ "btrfs" ];
   };
 
+  # TEST
+  services.openssh.permitRootLogin = "yes";
+  users.users.root = {
+    hashedPassword = "$6$fwJZwHNLE640VkQd$SrYMjayP9fofIncuz3ehVLpfwGlpUj0NFZSssSy8GcIXIbDKI4JnrgfMZxSw5vxPkXkAEL/ktm3UZOyPMzA.p0";
+  };
+
   networking.useNetworkd = true;
   networking.firewall.enable = false;
 
   services.openssh.enable = true;
   services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
+
   services.getty.autologinUser = "root";
 
   systemd.services.process-cmdline = {
     wantedBy = [ "multi-user.target" ];
+    # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
+    # 2. Parameter Expansion  [source:man bash]
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
       xargs -n1 -a /proc/cmdline | while read opt; do
