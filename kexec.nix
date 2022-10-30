@@ -63,6 +63,7 @@ in
   services.getty.autologinUser = "root";
 
   systemd.services.process-cmdline = {
+    wantedBy = [ "multi-user.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
     # 3. https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file
@@ -102,7 +103,7 @@ in
       echo $sops_key_url
       echo $tg_token
       echo $tg_id
-      sleep 5 # wait for network
+      sleep 5 # wait dhcp network
       curl -L $script_url
       echo "log end"
       
