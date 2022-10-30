@@ -1,8 +1,6 @@
 # https://github.com/NickCao/netboot/blob/master/flake.nix
 { pkgs, lib, config, modulesPath, ... }: 
 let
-  # Usage: 
-  # install github:mlyxshi/flake hk1 https://linkto/sops/key
   install = pkgs.writeShellApplication {
     name = "install";
     text = ''
@@ -47,18 +45,11 @@ in
     supportedFilesystems = [ "btrfs" ];
   };
 
-  # TEST
-  services.openssh.permitRootLogin = "yes";
-  users.users.root = {
-    hashedPassword = "$6$fwJZwHNLE640VkQd$SrYMjayP9fofIncuz3ehVLpfwGlpUj0NFZSssSy8GcIXIbDKI4JnrgfMZxSw5vxPkXkAEL/ktm3UZOyPMzA.p0";
-    openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMpaY3LyCW4HHqbp4SA4tnA+1Bkgwrtro2s/DEsBcPDe" ];
-  };
-
   networking.useNetworkd = true;
   networking.firewall.enable = false;
 
   services.openssh.enable = true;
-  # services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
+  services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
 
   services.getty.autologinUser = "root";
 
@@ -66,6 +57,7 @@ in
     wantedBy = [ "multi-user.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
+    # 3. Bash read command
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
       xargs -n1 -a /proc/cmdline | while read opt; do
@@ -79,7 +71,8 @@ in
     '';
   };
 
-
+  # escape " with '' in nix
+  # escape " with \" in bash
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
     if ! kexec -v >/dev/null 2>&1; then
