@@ -29,6 +29,14 @@ let
       --no-channel-copy --no-root-passwd \
       --option trusted-public-keys "mlyxshi.cachix.org-1:yc7GPiryyBn0HfiCXdmO1ECWKBhfwrjdIFnRSA4ct7s= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" \
       --option substituters "https://mlyxshi.cachix.org https://cache.garnix.io" 
+
+      if [[ ! -z "$4" && ! -z "$5" ]]; then
+        MESSAGE="<b>Install NixOS Completed</b>%0A$SYSTEM_CLOSURE"
+        URL="https://api.telegram.org/bot$4/sendMessage"
+        curl -X POST $URL -d chat_id=$5 -d text="$MESSAGE" -d parse_mode=html
+      fi
+
+      reboot
     '';
   };
 in
