@@ -89,7 +89,7 @@ in
     SCRIPT_DIR=$( cd -- "$( dirname -- "''${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
     kexec --load ''${SCRIPT_DIR}/bzImage \
       --initrd=''${SCRIPT_DIR}/initrd.gz \
-      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${1:+sshkey=''$1}  ''${2:+script=''$2}"
+      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${1:+sshkey=\"''$1\"} ''${2:+script=\"''$2\"}"
     kexec -e
   '');
 
