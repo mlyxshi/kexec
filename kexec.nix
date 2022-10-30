@@ -94,6 +94,13 @@ in
           tg_id="''${opt#tg_id=}"
         fi
       done
+
+      # log
+      echo $sshkey
+      echo $script_url
+      echo $sops_key_url
+      echo $tg_token
+      echo $tg_id
       
       echo $sshkey >> /run/authorized_keys
 
