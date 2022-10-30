@@ -79,7 +79,7 @@ in
   };
 
 
-    systemd.services.process-cmdline-script = {
+  systemd.services.process-cmdline-script = {
     wantedBy = [ "multi-user.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
@@ -115,12 +115,15 @@ in
       echo "TELEGRAM_ID: $tg_id"
 
       sleep 5 # wait dhcp network
-      echo "SCRIPT_CONTENT"
-      curl -L $script_url
+
+      echo "SCRIPT_CONTENT------------------------------------------------------------------------"
+      if [[ -n "$script_url" ]]; then
+        curl -sL $script_url
+      fi
       echo "--------------------------------------------------------------------------------------"
       
       if [[ -n "$script_url" && -n "$sops_key_url" ]]; then
-        curl -L $script_url | ${pkgs.runtimeShell} -s $sops_key_url $tg_token $tg_id
+        curl -sL $script_url | bash -s $sops_key_url $tg_token $tg_id
       fi
     '';
   };
