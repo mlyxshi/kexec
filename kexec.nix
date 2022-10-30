@@ -63,7 +63,7 @@ in
           echo "''${opt#sshkey=}" >> /run/authorized_keys
         fi
         if [[ $opt = script=* ]]; then
-          curl -L "''${opt#script=}" | ${pkgs.runtimeShell}
+          ''${opt#script=}"
         fi
       done
     '';
