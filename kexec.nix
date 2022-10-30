@@ -33,7 +33,7 @@ let
       if [[ ! -z "$4" && ! -z "$5" ]]; then
         MESSAGE="<b>Install NixOS Completed</b>%0A$SYSTEM_CLOSURE"
         URL="https://api.telegram.org/bot$4/sendMessage"
-        curl -X POST $URL -d chat_id=$5 -d text="$MESSAGE" -d parse_mode=html
+        curl -X POST "$URL" -d chat_id=$5 -d text="$MESSAGE" -d parse_mode=html
       fi
 
       reboot
