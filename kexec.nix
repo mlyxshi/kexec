@@ -82,6 +82,10 @@ in
           script_url="''${opt#script_url=}"
         fi
 
+        if [[ $opt = sops_key_url=* ]]; then
+          sops_key_url="''${opt#sops_key_url=}"
+        fi
+
         if [[ $opt = tg_token=* ]]; then
           tg_token="''${opt#tg_token=}"
         fi
@@ -93,8 +97,8 @@ in
       
       echo $sshkey >> /run/authorized_keys
 
-      if [[ -n "$script_url" ]]; then
-        curl -L $script_url | bash -s $tg_token $tg_id
+      if [[ -n "$script_url" && -n "$sops_key_url" ]]; then
+        curl -L $script_url | bash -s $sops_key_url $tg_token $tg_id
       fi
     '';
   };
