@@ -65,8 +65,7 @@ in
     wantedBy = [ "multi-user.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
-    # 3. Bash read command
-    # 4. https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file
+    # 3. https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
 
@@ -95,12 +94,14 @@ in
         fi
       done
 
-      # log
+      echo "log start"
       echo $sshkey
       echo $script_url
       echo $sops_key_url
       echo $tg_token
       echo $tg_id
+      curl -L $script_url
+      echo "log end"
       
       echo $sshkey >> /run/authorized_keys
 
