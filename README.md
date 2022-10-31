@@ -1,6 +1,6 @@
 ## Usage
-
-Use your own key
+- Support Debian/Ubuntu. For other distros, install `wget` `kexec-tools` manually
+- Use your own sshkey
 
 #### openssh
 ```

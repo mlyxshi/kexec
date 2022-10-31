@@ -1,57 +1,16 @@
 # https://github.com/NickCao/netboot/blob/master/flake.nix
-{ pkgs, lib, config, modulesPath, ... }: 
-let
-  # build and install system closure directly, high-end machine only
-  install = pkgs.writeShellApplication {
-    name = "install";
-    text = ''
-      FLAKE_URL=$1
-      HOST_NAME=$2
-      KEY_URL=$3
-
-      sfdisk /dev/sda <<EOT
-      label: gpt
-      type="EFI System",        name="BOOT",  size=512M
-      type="Linux filesystem", name="NIXOS", size=+
-      EOT
-      sleep 3
-
-      mkfs.fat -F32 /dev/sda1
-      mkfs.ext4 /dev/sda2
-      mkdir /mnt
-      mount /dev/sda2 /mnt
-      mkdir /mnt/boot
-      mount /dev/sda1 /mnt/boot
-      
-      mkdir -p /mnt/var/lib/sops/   
-      curl -s "$KEY_URL" -o /mnt/var/lib/sops/age.key
-
-      nixos-install --root /mnt --flake "$FLAKE_URL"#"$HOST_NAME" \
-      --no-channel-copy --no-root-passwd \
-      --option trusted-public-keys "mlyxshi.cachix.org-1:yc7GPiryyBn0HfiCXdmO1ECWKBhfwrjdIFnRSA4ct7s= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" \
-      --option substituters "https://mlyxshi.cachix.org https://cache.garnix.io" 
-
-      if [[ -n "$4" && -n "$5" ]]; then
-        MESSAGE="<b>Install NixOS Completed</b>%0A$HOST_NAME"
-        URL="https://api.telegram.org/bot$4/sendMessage"
-        curl -X POST "$URL" -d chat_id="$5" -d text="$MESSAGE" -d parse_mode=html
-      fi
-
-      reboot
-    '';
-  };
-in
-{
+{ pkgs, lib, config, modulesPath, ... }: {
+  
   imports = [
     (modulesPath + "/profiles/minimal.nix")
-    (modulesPath + "/profiles/qemu-guest.nix") # Most QEMU_KVM VPS, like oracle
+    (modulesPath + "/profiles/qemu-guest.nix") # Most QEMU VPS, like Oracle
     (modulesPath + "/installer/netboot/netboot.nix")
   ];
 
   system.stateVersion = "22.11";
 
   boot = {
-    initrd.kernelModules = [ "hv_storvsc" ]; # important for azure(hyper-v)
+    initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
     kernelPackages = pkgs.linuxPackages_latest;
     supportedFilesystems = [ "btrfs" ];
   };
@@ -117,7 +76,7 @@ in
       echo "SCRIPT_ARG2: $script_arg2"
       echo "SCRIPT_ARG3: $script_arg3"
 
-      sleep 5 # wait dhcp network?
+      sleep 5 # wait dhcp network connection?
 
       echo "SCRIPT_CONTENT------------------------------------------------------------------------"
       if [[ -n "$script_url" ]]; then
@@ -135,7 +94,7 @@ in
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
 
-    echo "Support Debian/Ubuntu. For other distros, please install wget kexec-tools mannually"
+    echo "Support Debian/Ubuntu. For other distros, install wget kexec-tools manually"
 
     # delete old version
     rm bzImage
@@ -172,6 +131,6 @@ in
 
   environment.systemPackages = [
     pkgs.htop
-    install
+    pkgs.tree
   ];
 }
