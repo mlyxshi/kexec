@@ -84,11 +84,11 @@ in
     wantedBy = [ "multi-user.target" ];
     # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
     # 2. Parameter Expansion  [source:man bash]
-    # 3. https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file
+    # 3. IFS=$'\n'  make newlines the only separator [https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file]
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
 
-      IFS=$'\n'  # make newlines the only separator
+      IFS=$'\n'
 
       for opt in $(xargs -n1 -a /proc/cmdline);
       do
