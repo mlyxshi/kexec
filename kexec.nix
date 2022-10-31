@@ -99,7 +99,6 @@
     # delete old version
     rm bzImage
     rm initrd.gz
-    rm kexec-boot 
 
     apt install -y wget kexec-tools
 
