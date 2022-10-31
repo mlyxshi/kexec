@@ -7,9 +7,6 @@
         system = "x86_64-linux";
         modules = [
           ./kexec.nix
-          {
-            system.stateVersion = "22.11";
-          }
         ];
       };
     }; 

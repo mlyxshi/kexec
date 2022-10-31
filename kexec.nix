@@ -32,7 +32,7 @@ let
       --option substituters "https://mlyxshi.cachix.org https://cache.garnix.io" 
 
       if [[ -n "$4" && -n "$5" ]]; then
-        MESSAGE="<b>Install NixOS Completed</b>%0A$SYSTEM_CLOSURE"
+        MESSAGE="<b>Install NixOS Completed</b>%0A$HOST_NAME"
         URL="https://api.telegram.org/bot$4/sendMessage"
         curl -X POST "$URL" -d chat_id="$5" -d text="$MESSAGE" -d parse_mode=html
       fi
@@ -44,9 +44,11 @@ in
 {
   imports = [
     (modulesPath + "/profiles/minimal.nix")
-    (modulesPath + "/profiles/qemu-guest.nix") # Most VPS, like oracle
+    (modulesPath + "/profiles/qemu-guest.nix") # Most QEMU_KVM VPS, like oracle
     (modulesPath + "/installer/netboot/netboot.nix")
   ];
+
+  system.stateVersion = "22.11";
 
   boot = {
     initrd.kernelModules = [ "hv_storvsc" ]; # important for azure(hyper-v)
@@ -96,26 +98,26 @@ in
           script_url="''${opt#script_url=}"
         fi
 
-        if [[ $opt = sops_key_url=* ]]; then
-          sops_key_url="''${opt#sops_key_url=}"
+        if [[ $opt = script_arg1=* ]]; then
+          script_arg1="''${opt#script_arg1=}"
         fi
 
-        if [[ $opt = tg_token=* ]]; then
-          tg_token="''${opt#tg_token=}"
+        if [[ $opt = script_arg2=* ]]; then
+          script_arg2="''${opt#script_arg2=}"
         fi
 
-        if [[ $opt = tg_id=* ]]; then
-          tg_id="''${opt#tg_id=}"
+        if [[ $opt = script_arg3=* ]]; then
+          script_arg3="''${opt#script_arg3=}"
         fi
       done
 
 
       echo "SCRIPT_URL: $script_url"
-      echo "SOPS_KEY_URL: $sops_key_url"
-      echo "TELEGRAM_TOKEN: $tg_token"
-      echo "TELEGRAM_ID: $tg_id"
+      echo "SCRIPT_ARG1: $script_arg1"
+      echo "SCRIPT_ARG2: $script_arg2"
+      echo "SCRIPT_ARG3: $script_arg3"
 
-      sleep 5 # wait dhcp network
+      sleep 5 # wait dhcp network?
 
       echo "SCRIPT_CONTENT------------------------------------------------------------------------"
       if [[ -n "$script_url" ]]; then
@@ -124,29 +126,46 @@ in
       echo "--------------------------------------------------------------------------------------"
       
       if [[ -n "$script_url" ]]; then
-        curl -sL $script_url | bash -s $sops_key_url $tg_token $tg_id
+        curl -sL $script_url | bash -s $script_arg1 $script_arg2 $script_arg3
       fi
     '';
   };
 
-  # escape " with '' in nix
-  # escape " with \" in bash
 
-  # 1 required: sshkey
-  # 2 optional: install script URL
-  # 3 optional: install script parameter1 -> SOPS_AGE_KEY_URL
-  # 3 optional: install script parameter2 -> Telegram Bot Token
-  # 3 optional: install script parameter3 -> Telegram Chat ID
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
+
+    echo "Support Debian/Ubuntu. For other distros, please install wget kexec-tools mannually"
+
+    # delete old version
+    rm bzImage
+    rm initrd.gz
+    rm kexec-boot 
+
+    apt install -y wget kexec-tools
+
+    wget https://github.com/mlyxshi/kexec/releases/download/latest/initrd.gz
+    wget https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
+
     if ! kexec -v >/dev/null 2>&1; then
       echo "kexec not found: please install kexec-tools" 2>&1
       exit 1
     fi
-    SCRIPT_DIR=$( cd -- "$( dirname -- "''${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-    kexec --load ''${SCRIPT_DIR}/bzImage \
-      --initrd=''${SCRIPT_DIR}/initrd.gz \
-      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${1:+sshkey=\"''$1\"} ''${2:+script_url=\"''$2\"} ''${3:+sops_key_url=\"''$3\"} ''${4:+tg_token=\"''$4\"} ''${5:+tg_id=\"''$5\"}"
+
+    extraCmdLine=""
+    for arg in "$@"
+    do
+      # sshkey add double quotes
+      if [[ $arg = sshkey=* ]]; then
+        arg="sshkey=\"''${arg#sshkey=}\""
+      fi   
+      extraCmdLine+="$arg "
+    done
+
+
+    kexec --load ./bzImage \
+      --initrd=./initrd.gz \
+      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $extraCmdLine"
     kexec -e
   '');
 
