@@ -88,7 +88,7 @@ in
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
 
-      IFS=$'\n'  
+      IFS=$'\n'  # make newlines the only separator
 
       for opt in $(xargs -n1 -a /proc/cmdline);
       do
