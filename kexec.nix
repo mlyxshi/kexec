@@ -21,6 +21,12 @@
   services.openssh.enable = true;
   services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
 
+  # Try overwrite /run/ssh_host_ed25519_key and /run/ssh_host_ed25519_key.pub to the original one, so we don't need "ssh-keygen -R IP"
+  services.openssh.hostKeys = [{
+    path = "/run/ssh_host_ed25519_key";
+    type = "ed25519";
+  }];
+
   services.getty.autologinUser = "root";
 
   systemd.services.process-cmdline-ssh = {
@@ -120,10 +126,13 @@
       extraCmdLine+="$arg "
     done
 
-
+  
+    [[ -f /etc/ssh/ssh_host_ed25519_key  ]] && ssh_host_ed25519_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64) && ssh_host_ed25519_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64)
+    
     kexec --load ./bzImage \
       --initrd=./initrd.gz \
-      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $extraCmdLine"
+      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $extraCmdLine host_key=$ssh_host_ed25519_key host_key_pub=$ssh_host_ed25519_key_pub""
+    
     kexec -e
   '');
 
