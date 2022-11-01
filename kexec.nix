@@ -29,7 +29,7 @@
 
   services.getty.autologinUser = "root";
 
-  systemd.services.process-cmdline-ssh = {
+  systemd.services.process-cmdline-ssh-authorized-key = {
     wantedBy = [ "multi-user.target" ];
     script = ''
       IFS=$'\n'  
@@ -96,6 +96,28 @@
     '';
   };
 
+  systemd.services.process-cmdline-host-key = {
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      export PATH=/run/current-system/sw/bin:$PATH
+
+      IFS=$'\n'  
+
+      for opt in $(xargs -n1 -a /proc/cmdline);
+      do
+        if [[ $opt = host_key=* ]]; then
+          host_key="''${opt#host_key=}"      
+        fi
+        if [[ $opt = host_key_pub=* ]]; then
+          host_key_pub="''${opt#host_key_pub=}"      
+        fi
+      done
+
+      echo $host_key | base64 -d > /run/host_key_tmp
+      echo $host_key_pub | base64 -d > /run/host_key_pub_tmp
+    '';
+  };
+
 
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
@@ -127,7 +149,7 @@
     done
 
   
-    [[ -f /etc/ssh/ssh_host_ed25519_key  ]] && ssh_host_ed25519_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64) && ssh_host_ed25519_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64)
+    [[ -f /etc/ssh/ssh_host_ed25519_key  ]] && ssh_host_ed25519_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && ssh_host_ed25519_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
     
     kexec --load ./bzImage \
       --initrd=./initrd.gz \
