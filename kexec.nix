@@ -115,11 +115,11 @@
     fi
 
   
-    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && ssh_host_ed25519_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && ssh_host_ed25519_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
+    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
     [[ -f /home/$SUDO_USER/.ssh/authorized_keys ]] && sshkey=$(cat /home/$SUDO_USER/.ssh/authorized_keys|base64|tr -d \\n)
 
     kexec --load ./bzImage --initrd=./initrd.gz \
-      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $@  ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$ssh_host_ed25519_key}  ''${host_key_pub:+host_key_pub=''$ssh_host_ed25519_key_pub}"
+      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $@ ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}"
     
     kexec -e
   '');
