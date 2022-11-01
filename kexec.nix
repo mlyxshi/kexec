@@ -1,7 +1,6 @@
 # https://github.com/NickCao/netboot/blob/master/flake.nix
 # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
 # 2. Parameter Expansion  [source:man bash]
-# 3. IFS=$'\n'  make newlines the only separator [https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file]
 
 { pkgs, lib, config, modulesPath, ... }: {
   
@@ -25,19 +24,18 @@
 
   services.openssh.enable = true;
   services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
-  # Try overwrite /run/ssh_host_ed25519_key and /run/ssh_host_ed25519_key.pub to the original one, so we don't need "ssh-keygen -R IP"
+  
   services.openssh.hostKeys = [{
     path = "/run/ssh_host_ed25519_key";
     type = "ed25519";
   }];
 
+  # Overwrite /run/ssh_host_ed25519_key and /run/ssh_host_ed25519_key.pub to the original one, so we don't need "ssh-keygen -R IP"
   # https://github.com/NixOS/nixpkgs/blob/26eb67abc9a7370a51fcb86ece18eaf19ae9207f/nixos/modules/services/networking/ssh/sshd.nix#L435
   systemd.services.sshd.preStart = lib.mkForce ''
     mkdir -m 0755 -p /etc/ssh
 
     export PATH=/run/current-system/sw/bin:$PATH
-
-    IFS=$'\n'  
 
     for opt in $(xargs -n1 -a /proc/cmdline);
     do
@@ -65,8 +63,6 @@
     wantedBy = [ "multi-user.target" ];
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
-
-      IFS=$'\n'
 
       for opt in $(xargs -n1 -a /proc/cmdline);
       do
@@ -119,7 +115,14 @@
 
   
     [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
-    [[ -f /home/$SUDO_USER/.ssh/authorized_keys ]] && sshkey=$(cat /home/$SUDO_USER/.ssh/authorized_keys|base64|tr -d \\n)
+    
+    if [[ -s /home/$SUDO_USER/.ssh/authorized_keys ]]
+    then 
+      sshkey=$(cat /home/$SUDO_USER/.ssh/authorized_keys|base64|tr -d \\n)
+    else
+      echo "No authorized_keys found, add your public key to /home/$SUDO_USER/.ssh/authorized_keys"
+      exit 1
+    fi
 
     echo "--------------------------------------------------"
     echo "sshkey(base64): $sshkey"
