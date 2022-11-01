@@ -107,7 +107,7 @@
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
-    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
+    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d '\n') && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d '\n')
     
               # sudo                               # root                     # NixOS
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
