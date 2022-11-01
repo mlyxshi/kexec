@@ -99,8 +99,8 @@
     [ -f "initrd.gz" ] && rm initrd.gz
 
     command -v apt > /dev/null && apt install -y wget kexec-tools
-    ! command -v wget > /dev/null && echo "wget not found: please install wget"; exit 1
-    ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools"; exit 1
+    ! command -v wget > /dev/null && echo "wget not found: please install wget" && exit 1
+    ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools" && exit 1
 
     wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/initrd.gz
     wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
