@@ -96,27 +96,31 @@
     '';
   };
 
-  systemd.services.process-cmdline-host-key = {
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      export PATH=/run/current-system/sw/bin:$PATH
+  systemd.services.sshd.preStart = lib.mkForce ''
+    mkdir -m 0755 -p /etc/ssh
 
-      IFS=$'\n'  
+    export PATH=/run/current-system/sw/bin:$PATH
 
-      for opt in $(xargs -n1 -a /proc/cmdline);
-      do
-        if [[ $opt = host_key=* ]]; then
-          host_key="''${opt#host_key=}"      
-        fi
-        if [[ $opt = host_key_pub=* ]]; then
-          host_key_pub="''${opt#host_key_pub=}"      
-        fi
-      done
+    IFS=$'\n'  
 
-      echo $host_key | base64 -d > /run/host_key_tmp
-      echo $host_key_pub | base64 -d > /run/host_key_pub_tmp
-    '';
-  };
+    for opt in $(xargs -n1 -a /proc/cmdline);
+    do
+      if [[ $opt = host_key=* ]]; then
+        host_key="''${opt#host_key=}"      
+      fi
+      if [[ $opt = host_key_pub=* ]]; then
+        host_key_pub="''${opt#host_key_pub=}"      
+      fi
+    done
+
+    if [[ -n $host_key ]]; then
+      echo $host_key | base64 -d > /run/ssh_host_ed25519_key
+      echo $host_key_pub | base64 -d > /run/ssh_host_ed25519_key.pub
+
+      chmod 600 /run/ssh_host_ed25519_key
+      chmod 644 /run/ssh_host_ed25519_key.pub       
+    fi
+  ''
 
 
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
