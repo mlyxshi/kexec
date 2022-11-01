@@ -1,6 +1,7 @@
 ## Usage
 - Support Debian/Ubuntu. For other distros, install `wget` `kexec-tools` manually
 - Use your own sshkey
+- Require script to be run as root
 
 #### openssh
 ```

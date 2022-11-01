@@ -1,4 +1,8 @@
 # https://github.com/NickCao/netboot/blob/master/flake.nix
+# 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
+# 2. Parameter Expansion  [source:man bash]
+# 3. IFS=$'\n'  make newlines the only separator [https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file]
+
 { pkgs, lib, config, modulesPath, ... }: {
   
   imports = [
@@ -17,41 +21,55 @@
 
   networking.useNetworkd = true;
   networking.firewall.enable = false;
+  services.getty.autologinUser = "root";
 
   services.openssh.enable = true;
   services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
-
   # Try overwrite /run/ssh_host_ed25519_key and /run/ssh_host_ed25519_key.pub to the original one, so we don't need "ssh-keygen -R IP"
   services.openssh.hostKeys = [{
     path = "/run/ssh_host_ed25519_key";
     type = "ed25519";
   }];
 
-  services.getty.autologinUser = "root";
+  # https://github.com/NixOS/nixpkgs/blob/26eb67abc9a7370a51fcb86ece18eaf19ae9207f/nixos/modules/services/networking/ssh/sshd.nix#L435
+  systemd.services.sshd.preStart = lib.mkForce ''
+    mkdir -m 0755 -p /etc/ssh
 
-  systemd.services.process-cmdline-ssh-authorized-key = {
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      IFS=$'\n'  
+    export PATH=/run/current-system/sw/bin:$PATH
 
-      for opt in $(xargs -n1 -a /proc/cmdline);
-      do
-        if [[ $opt = sshkey=* ]]; then
-          sshkey="''${opt#sshkey=}" 
-          break       
-        fi
-      done
+    IFS=$'\n'  
 
-      echo $sshkey >> /run/authorized_keys
-    '';
-  };
+    for opt in $(xargs -n1 -a /proc/cmdline);
+    do
+      if [[ $opt = sshkey=* ]]; then
+        sshkey="''${opt#sshkey=}"       
+      fi
+      if [[ $opt = host_key=* ]]; then
+        host_key="''${opt#host_key=}"      
+      fi
+      if [[ $opt = host_key_pub=* ]]; then
+        host_key_pub="''${opt#host_key_pub=}"      
+      fi
+    done
 
+    [[ -n $sshkey ]] && echo $sshkey | base64 -d > /run/authorized_keys   
+    
 
+    if [[ -n $host_key && -n $host_key_pub ]]
+    then
+      echo $host_key | base64 -d > /run/ssh_host_ed25519_key
+      echo $host_key_pub | base64 -d > /run/ssh_host_ed25519_key.pub
+
+      chmod 600 /run/ssh_host_ed25519_key
+      chmod 644 /run/ssh_host_ed25519_key.pub   
+    else 
+      ssh-keygen -t "ed25519" -f "/run/ssh_host_ed25519_key" -N ""  
+    fi
+  '';
+
+  
   systemd.services.process-cmdline-script = {
     wantedBy = [ "multi-user.target" ];
-    # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
-    # 2. Parameter Expansion  [source:man bash]
-    # 3. IFS=$'\n'  make newlines the only separator [https://unix.stackexchange.com/questions/7011/how-to-loop-over-the-lines-of-a-file]
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
 
@@ -96,41 +114,19 @@
     '';
   };
 
-  systemd.services.sshd.preStart = lib.mkForce ''
-    mkdir -m 0755 -p /etc/ssh
 
-    export PATH=/run/current-system/sw/bin:$PATH
-
-    IFS=$'\n'  
-
-    for opt in $(xargs -n1 -a /proc/cmdline);
-    do
-      if [[ $opt = host_key=* ]]; then
-        host_key="''${opt#host_key=}"      
-      fi
-      if [[ $opt = host_key_pub=* ]]; then
-        host_key_pub="''${opt#host_key_pub=}"      
-      fi
-    done
-
-    if [[ -n $host_key ]]; then
-      echo $host_key | base64 -d > /run/ssh_host_ed25519_key
-      echo $host_key_pub | base64 -d > /run/ssh_host_ed25519_key.pub
-
-      chmod 600 /run/ssh_host_ed25519_key
-      chmod 644 /run/ssh_host_ed25519_key.pub       
-    fi
-  '';
 
 
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
 
+    set -e
+    
     echo "Support Debian/Ubuntu. For other distros, install wget kexec-tools manually"
 
     # delete old version
-    rm bzImage
-    rm initrd.gz
+    [ -f "bzImage" ] && rm bzImage
+    [ -f "initrd.gz" ] && rm initrd.gz
 
     apt install -y wget kexec-tools
 
@@ -142,22 +138,12 @@
       exit 1
     fi
 
-    extraCmdLine=""
-    for arg in "$@"
-    do
-      # sshkey add double quotes
-      if [[ $arg = sshkey=* ]]; then
-        arg="sshkey=\"''${arg#sshkey=}\""
-      fi   
-      extraCmdLine+="$arg "
-    done
-
   
-    [[ -f /etc/ssh/ssh_host_ed25519_key  ]] && ssh_host_ed25519_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && ssh_host_ed25519_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
-    
-    kexec --load ./bzImage \
-      --initrd=./initrd.gz \
-      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $extraCmdLine host_key=$ssh_host_ed25519_key host_key_pub=$ssh_host_ed25519_key_pub"
+    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && ssh_host_ed25519_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && ssh_host_ed25519_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
+    [[ -f /home/$SUDO_USER/.ssh/authorized_keys ]] && sshkey=$(cat /home/$SUDO_USER/.ssh/authorized_keys|base64|tr -d \\n)
+
+    kexec --load ./bzImage --initrd=./initrd.gz \
+      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $@  ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$ssh_host_ed25519_key}  ''${host_key_pub:+host_key_pub=''$ssh_host_ed25519_key_pub}"
     
     kexec -e
   '');
