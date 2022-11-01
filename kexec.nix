@@ -111,9 +111,14 @@
     
               # sudo                               # root                     # NixOS
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
-      [[ -s $i ]] && echo "Get SSH key From $i";sshkey=$(cat $i|base64|tr -d \\n); break     
+      if [[ -s $i ]]
+      then 
+        echo "--------------------------------------------------"
+        echo "Get SSH key From $i"
+        sshkey=$(cat $i|base64|tr -d \\n)
+        break
+      if     
     done
-
 
     echo "--------------------------------------------------"
     echo "sshkey(base64): $sshkey"
