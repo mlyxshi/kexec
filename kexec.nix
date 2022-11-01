@@ -117,8 +117,15 @@
     [[ -f /home/$SUDO_USER/.ssh/authorized_keys ]] && sshkey=$(cat /home/$SUDO_USER/.ssh/authorized_keys|base64|tr -d \\n)
 
     echo "sshkey_base64: $sshkey"
+    echo "--------------------------------------------------"
     echo "host_key_base64: $host_key"
+    echo "--------------------------------------------------"
     echo "host_key_pub_base64: $host_key_pub"
+    echo "--------------------------------------------------"
+    echo "script info: $@"
+
+    echo "Wait..."
+    echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
     kexec --load ./bzImage --initrd=./initrd.gz \
       --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $@ ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}"
