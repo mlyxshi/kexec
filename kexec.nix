@@ -111,7 +111,7 @@
     
               # sudo                               # root                     # NixOS
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
-      if [[ -s $i ]]
+      if [[ -e $i && -s $i ]]
       then 
         echo "--------------------------------------------------"
         echo "Get SSH key From $i"
