@@ -115,7 +115,7 @@
       then 
         echo "--------------------------------------------------"
         echo "Get SSH key From $i"
-        sshkey=$(cat $i|base64|tr -d \\n)
+        sshkey=$(cat $i|base64|tr -d '\n')
         break
       fi     
     done
