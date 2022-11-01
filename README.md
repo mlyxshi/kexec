@@ -1,8 +1,7 @@
 ## Usage
 - Support Debian/Ubuntu. For other distros, install `wget` `kexec-tools` manually
 - Require script to be run as root(sudo)
-- Check whether or not `/home/$SUDO_USER/.ssh/authorized_keys` contains your public SSH key, it will be the sshd authorizedKeys of NixOS. If `/home/$SUDO_USER/.ssh/authorized_keys` is empty, write your public SSH key to it.
-
+- Ensure `/home/$SUDO_USER/.ssh/authorized_keys` or `/root/.ssh/authorized_keys` or `/etc/ssh/authorized_keys.d/root` contains your public SSH key.
 #### kexec NixOS
 ```
 curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-boot | bash -s

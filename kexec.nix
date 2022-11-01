@@ -12,19 +12,21 @@
 
   system.stateVersion = "22.11";
 
-  boot = {
-    initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
-    kernelPackages = pkgs.linuxPackages_latest;
-    supportedFilesystems = [ "btrfs" ];
-  };
-
+  environment.systemPackages = with pkgs;[
+    htop
+    tree
+  ];
+   
+  boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.supportedFilesystems = [ "btrfs" ];
+  
   networking.useNetworkd = true;
   networking.firewall.enable = false;
   services.getty.autologinUser = "root";
 
   services.openssh.enable = true;
-  services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
-  
+  services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ]; 
   services.openssh.hostKeys = [{
     path = "/run/ssh_host_ed25519_key";
     type = "ed25519";
@@ -87,42 +89,31 @@
   };
 
 
-
-
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
-    
+    set -e   
     echo "Support Debian/Ubuntu. For other distros, install wget kexec-tools manually"
 
     # delete old version
     [ -f "bzImage" ] && rm bzImage
     [ -f "initrd.gz" ] && rm initrd.gz
 
-    apt install -y wget kexec-tools
+    command -v apt > /dev/null && apt install -y wget kexec-tools
+    ! command -v wget > /dev/null && echo "wget not found: please install wget"; exit 1
+    ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools"; exit 1
 
-    wget https://github.com/mlyxshi/kexec/releases/download/latest/initrd.gz
-    wget https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
+    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/initrd.gz
+    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
 
-    if ! kexec -v >/dev/null 2>&1; then
-      echo "kexec not found: please install kexec-tools" 2>&1
-      exit 1
-    fi
-
-    for arg in "$@"
-    do 
-      cmdScript+="$arg "
+    for arg in "$@"; do cmdScript+="$arg "; done
+  
+    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n); host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
+    
+              # sudo                               # root                     # NixOS
+    for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
+      [[ -s $i ]] && echo "Get SSH key From $i";sshkey=$(cat $i|base64|tr -d \\n); break     
     done
 
-  
-    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
-    
-    if [[ -s /home/$SUDO_USER/.ssh/authorized_keys ]]
-    then 
-      sshkey=$(cat /home/$SUDO_USER/.ssh/authorized_keys|base64|tr -d \\n)
-    else
-      echo "No authorized_keys found, add your public key to /home/$SUDO_USER/.ssh/authorized_keys"
-      exit 1
-    fi
 
     echo "--------------------------------------------------"
     echo "sshkey(base64): $sshkey"
@@ -140,10 +131,4 @@
     kexec --load ./bzImage --initrd=./initrd.gz  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
     kexec -e
   '');
-
-
-  environment.systemPackages = [
-    pkgs.htop
-    pkgs.tree
-  ];
 }
