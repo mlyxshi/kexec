@@ -131,7 +131,7 @@
     
     kexec --load ./bzImage \
       --initrd=./initrd.gz \
-      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $extraCmdLine host_key=$ssh_host_ed25519_key host_key_pub=$ssh_host_ed25519_key_pub""
+      --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $extraCmdLine host_key=$ssh_host_ed25519_key host_key_pub=$ssh_host_ed25519_key_pub"
     
     kexec -e
   '');
