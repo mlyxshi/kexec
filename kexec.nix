@@ -41,20 +41,13 @@
 
     for opt in $(xargs -n1 -a /proc/cmdline);
     do
-      if [[ $opt = sshkey=* ]]; then
-        sshkey="''${opt#sshkey=}"       
-      fi
-      if [[ $opt = host_key=* ]]; then
-        host_key="''${opt#host_key=}"      
-      fi
-      if [[ $opt = host_key_pub=* ]]; then
-        host_key_pub="''${opt#host_key_pub=}"      
-      fi
+      [[ $opt = sshkey=* ]] && sshkey="''${opt#sshkey=}"         
+      [[ $opt = host_key=* ]] && host_key="''${opt#host_key=}"       
+      [[ $opt = host_key_pub=* ]] && host_key_pub="''${opt#host_key_pub=}"
     done
 
     [[ -n $sshkey ]] && echo $sshkey | base64 -d > /run/authorized_keys   
     
-
     if [[ -n $host_key && -n $host_key_pub ]]
     then
       echo $host_key | base64 -d > /run/ssh_host_ed25519_key
@@ -77,23 +70,11 @@
 
       for opt in $(xargs -n1 -a /proc/cmdline);
       do
-        if [[ $opt = script_url=* ]]; then
-          script_url="''${opt#script_url=}"
-        fi
-
-        if [[ $opt = script_arg1=* ]]; then
-          script_arg1="''${opt#script_arg1=}"
-        fi
-
-        if [[ $opt = script_arg2=* ]]; then
-          script_arg2="''${opt#script_arg2=}"
-        fi
-
-        if [[ $opt = script_arg3=* ]]; then
-          script_arg3="''${opt#script_arg3=}"
-        fi
+        [[ $opt = script_url=* ]] && script_url="''${opt#script_url=}"
+        [[ $opt = script_arg1=* ]] && script_arg1="''${opt#script_arg1=}"
+        [[ $opt = script_arg2=* ]] && script_arg2="''${opt#script_arg2=}"
+        [[ $opt = script_arg3=* ]] && script_arg3="''${opt#script_arg3=}"     
       done
-
 
       echo "SCRIPT_URL: $script_url"
       echo "SCRIPT_ARG1: $script_arg1"
@@ -103,14 +84,9 @@
       sleep 5 # wait dhcp network connection?
 
       echo "SCRIPT_CONTENT------------------------------------------------------------------------"
-      if [[ -n "$script_url" ]]; then
-        curl -sL $script_url
-      fi
-      echo "--------------------------------------------------------------------------------------"
-      
-      if [[ -n "$script_url" ]]; then
-        curl -sL $script_url | bash -s $script_arg1 $script_arg2 $script_arg3
-      fi
+      [[ -n "$script_url" ]] && curl -sL $script_url
+      echo "--------------------------------------------------------------------------------------"   
+      [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_arg1 $script_arg2 $script_arg3   
     '';
   };
 
