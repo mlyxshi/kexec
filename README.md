@@ -1,5 +1,5 @@
 ## Usage
-- Support Debian/Ubuntu. For other distros, install `wget` `kexec-tools` manually
+- Support Debian/Ubuntu/NixOS. For other distros, install `wget` `kexec-tools` manually
 - Require script to be run as root(sudo)
 - Ensure `/home/$SUDO_USER/.ssh/authorized_keys` or `/root/.ssh/authorized_keys` or `/etc/ssh/authorized_keys.d/root` contains your public SSH key.
 #### kexec NixOS
