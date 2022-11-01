@@ -122,13 +122,13 @@
     [[ -f /home/$SUDO_USER/.ssh/authorized_keys ]] && sshkey=$(cat /home/$SUDO_USER/.ssh/authorized_keys|base64|tr -d \\n)
 
     echo "--------------------------------------------------"
-    echo "sshkey_base64: $sshkey"
+    echo "sshkey(base64): $sshkey"
     echo "--------------------------------------------------"
-    echo "host_key_base64: $host_key"
+    echo "host_key(base64): $host_key"
     echo "--------------------------------------------------"
-    echo "host_key_pub_base64: $host_key_pub"
+    echo "host_key_pub(base64): $host_key_pub"
     echo "--------------------------------------------------"
-    echo "script info: $@"
+    echo "script_info: $@"
     echo "--------------------------------------------------"
 
     echo "Wait..."
