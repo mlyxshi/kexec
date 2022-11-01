@@ -39,7 +39,7 @@
 
     export PATH=/run/current-system/sw/bin:$PATH
 
-    for opt in $(xargs -n1 -a /proc/cmdline);
+    for opt in $(xargs -n1 -a /proc/cmdline)
     do
       [[ $opt = sshkey=* ]] && sshkey="''${opt#sshkey=}"         
       [[ $opt = host_key=* ]] && host_key="''${opt#host_key=}"       
@@ -66,7 +66,7 @@
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
 
-      for opt in $(xargs -n1 -a /proc/cmdline);
+      for opt in $(xargs -n1 -a /proc/cmdline)
       do
         [[ $opt = script_url=* ]] && script_url="''${opt#script_url=}"
         [[ $opt = script_arg1=* ]] && script_arg1="''${opt#script_arg1=}"
@@ -107,7 +107,7 @@
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
-    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n); host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
+    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d \\n) && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d \\n)
     
               # sudo                               # root                     # NixOS
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
