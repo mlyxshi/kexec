@@ -120,7 +120,7 @@
       chmod 600 /run/ssh_host_ed25519_key
       chmod 644 /run/ssh_host_ed25519_key.pub       
     fi
-  ''
+  '';
 
 
   system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
