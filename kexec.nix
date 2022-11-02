@@ -4,6 +4,8 @@
 
 { pkgs, lib, config, modulesPath, ... }: let
 
+  kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
+
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
     set -e   
@@ -14,7 +16,7 @@
     ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools" && exit 1
 
     wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/initrd-${pkgs.stdenv.hostPlatform.system}
-    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/bzImage-${pkgs.stdenv.hostPlatform.system}
+    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelTarget}-${pkgs.stdenv.hostPlatform.system}
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
@@ -44,7 +46,7 @@
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
-    kexec --load ./bzImage-${pkgs.stdenv.hostPlatform.system} --initrd=./initrd-${pkgs.stdenv.hostPlatform.system}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
+    kexec --load ./${kernelTarget}-${pkgs.stdenv.hostPlatform.system} --initrd=./initrd-${pkgs.stdenv.hostPlatform.system}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
     kexec -e
   '';
 in{
@@ -135,7 +137,7 @@ in{
 
   system.build.kexec = pkgs.runCommand "buildkexec" { } ''
     mkdir -p $out
-    ln -s ${config.system.build.kernel}/bzImage   $out/bzImage-${pkgs.stdenv.hostPlatform.system}
+    ln -s ${config.system.build.kernel}/${kernelTarget}  $out/${kernelTarget}-${pkgs.stdenv.hostPlatform.system}
     ln -s ${config.system.build.netbootRamdisk}/initrd  $out/initrd-${pkgs.stdenv.hostPlatform.system}
     ln -s ${kexecScript}  $out/kexec-boot-${pkgs.stdenv.hostPlatform.system}
   '';
