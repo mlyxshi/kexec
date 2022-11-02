@@ -16,15 +16,19 @@ jobs:
         extra_nix_config: |
           extra-platforms = aarch64-linux
 
-
+    - run: |
+        nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
+        cp -Lr --no-preserve=all result artifact-x86_64
     
     - run: |
         nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec
-        cp -Lr --no-preserve=all result artifact
+        cp -Lr --no-preserve=all result artifact-aarch64
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "latest"
         prerelease: true
-        files: artifact/*
+        files: |
+          artifact-x86_64/*
+          artifact-aarch64/*
