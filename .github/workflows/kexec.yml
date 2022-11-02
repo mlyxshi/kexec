@@ -25,7 +25,12 @@ jobs:
         cp -Lr --no-preserve=all buildout2 artifact
    
     - run: |
+        ls -alh buildout1
+        echo "----------"
+        ls -alh buildout2
+        echo "----------"
         ls -alh artifact
+        echo "----------"
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
