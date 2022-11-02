@@ -1,7 +1,8 @@
-## Usage
+## Intro
 - Support `Debian`/`Ubuntu`/`NixOS`. For other distros, install `wget` `kexec-tools` manually
 - Require script to be run as root or sudo
 - Ensure `/home/$SUDO_USER/.ssh/authorized_keys` or `/root/.ssh/authorized_keys` or `/etc/ssh/authorized_keys.d/root` contains your public SSH key.
+## Usage
 #### kexec NixOS
 ```
 curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-x86_64-linux | bash -s
@@ -10,7 +11,7 @@ curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-x86_64-
 curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-aarch64-linux | bash -s
 ```
 
-#### run script (optional)
+#### kexec NixOS and run script automatically (optional)
 ```
 curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-x86_64-linux | bash -s script_url=AUTORUN_SCRIPT_URL
 ```
