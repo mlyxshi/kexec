@@ -139,6 +139,6 @@ in{
     mkdir -p $out
     ln -s ${config.system.build.kernel}/${kernelTarget}  $out/${kernelTarget}-${pkgs.stdenv.hostPlatform.system}
     ln -s ${config.system.build.netbootRamdisk}/initrd  $out/initrd-${pkgs.stdenv.hostPlatform.system}
-    ln -s ${kexecScript}  $out/kexec-boot-${pkgs.stdenv.hostPlatform.system}
+    ln -s ${kexecScript}  $out/kexec-${pkgs.stdenv.hostPlatform.system}
   '';
 }
