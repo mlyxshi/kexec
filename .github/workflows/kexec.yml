@@ -17,7 +17,7 @@ jobs:
 
     - run: |
         nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
-        #cp -Lr --no-preserve=all result artifact
+        cp -Lr --no-preserve=all result artifact
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -25,4 +25,4 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: true
         files: |
-          result/*
+          artifact/*
