@@ -18,11 +18,11 @@ jobs:
 
     - run: |
         nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec --out-link buildout1
-        cp -Lr --no-preserve=all buildout1 artifact
+        cp -Lr --no-preserve=all buildout1 artifact1
     
     - run: |
         nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec --out-link buildout2
-        cp -Lr --no-preserve=all buildout2 artifact
+        cp -Lr --no-preserve=all buildout2 artifact2
    
     - run: |
         ls -l buildout1
@@ -31,7 +31,9 @@ jobs:
         ls -l buildout2
         ls -a buildout2
         echo "----------"
-        ls -alh artifact
+        ls -alh artifact1
+        echo "----------"
+        ls -alh artifact2
         echo "----------"
 
     - uses: marvinpinto/action-automatic-releases@latest
@@ -40,4 +42,5 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: true
         files: |
-          artifact/*
+          artifact1/*
+          artifact2/*
