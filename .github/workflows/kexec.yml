@@ -17,10 +17,12 @@ jobs:
           extra-platforms = aarch64-linux
 
     - run: |
-        nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec --out-link upload1
+        nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec --out-link buildout1
+        cp -Lr --no-preserve=all buildout1 artifact
     
     - run: |
-        nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec --out-link upload2
+        nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec --out-link buildout2
+        cp -Lr --no-preserve=all buildout2 artifact
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -28,5 +30,4 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: true
         files: |
-          upload1/*
-          upload2/*
+          artifact/*
