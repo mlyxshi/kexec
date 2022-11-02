@@ -16,6 +16,10 @@ jobs:
           extra-platforms = aarch64-linux
 
     - run: |
+        nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
+        cp -Lr --no-preserve=all result artifact
+    
+    - run: |
         nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec
         cp -Lr --no-preserve=all result artifact
 
