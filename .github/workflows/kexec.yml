@@ -16,7 +16,7 @@ jobs:
           extra-platforms = aarch64-linux
           trusted-public-keys = mlyxshi.cachix.org-1:yc7GPiryyBn0HfiCXdmO1ECWKBhfwrjdIFnRSA4ct7s=
           substituters = https://mlyxshi.cachix.org
-    - uses: cachix/cachix-action@v12
+    - uses: cachix/cachix-action@v11
       with:
         name: mlyxshi
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
@@ -24,13 +24,6 @@ jobs:
         nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
         cp -Lr --no-preserve=all result artifact
 
-    # - run: |
-    #     nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
-    #     cp -Lr --no-preserve=all result artifact
-    # - run: |
-    #     nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec
-    #     cp -Lr --no-preserve=all result artifact
-    # Settings -> Actions -> General and give "Read and write permissions" to the Github Actions workflows.
     - uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
