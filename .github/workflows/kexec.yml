@@ -14,15 +14,10 @@ jobs:
       with:
         extra_nix_config: |
           extra-platforms = aarch64-linux
-          trusted-public-keys = mlyxshi.cachix.org-1:yc7GPiryyBn0HfiCXdmO1ECWKBhfwrjdIFnRSA4ct7s=
-          substituters = https://mlyxshi.cachix.org
-    - uses: cachix/cachix-action@v11
-      with:
-        name: mlyxshi
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
     - run: |
         nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
-        cp -Lr --no-preserve=all result artifact
+        #cp -Lr --no-preserve=all result artifact
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -30,4 +25,4 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: true
         files: |
-          artifact/*
+          result/*
