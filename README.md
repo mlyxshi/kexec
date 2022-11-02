@@ -9,7 +9,7 @@ curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-boot-x8
 
 #### run script (optional)
 ```
-curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-boot-x86_64-linux| bash -s script_url=AUTORUN_SCRIPT_URL
+curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-boot-x86_64-linux | bash -s script_url=AUTORUN_SCRIPT_URL
 ```
 
 #### add 1~3 script arguments (optional)
