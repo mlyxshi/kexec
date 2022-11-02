@@ -13,8 +13,8 @@
     ! command -v wget > /dev/null && echo "wget not found: please install wget" && exit 1
     ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools" && exit 1
 
-    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/initrd
-    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
+    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/initrd-${pkgs.stdenv.hostPlatform.linuxArch}
+    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/bzImage-${pkgs.stdenv.hostPlatform.linuxArch}
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
@@ -44,7 +44,7 @@
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
-    kexec --load ./bzImage --initrd=./initrd  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
+    kexec --load ./bzImage-${pkgs.stdenv.hostPlatform.linuxArch} --initrd=./initrd-${pkgs.stdenv.hostPlatform.linuxArch}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
     kexec -e
   '';
 in{
