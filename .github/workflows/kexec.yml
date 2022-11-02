@@ -23,6 +23,9 @@ jobs:
     - run: |
         nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec --out-link buildout2
         cp -Lr --no-preserve=all buildout2 artifact
+   
+    - run: |
+        ls -alh artifact
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
