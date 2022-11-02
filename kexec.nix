@@ -5,6 +5,9 @@
 { pkgs, lib, config, modulesPath, ... }: let
 
   kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
+  kernelName = lib.concatStrings ["${kernelTarget}" "-" "${pkgs.stdenv.hostPlatform.system}"];
+  initrdName = lib.concatStrings ["initrd" "-" "${pkgs.stdenv.hostPlatform.system}"];
+  kexecScriptName= lib.concatStrings ["kexec" "-" "${pkgs.stdenv.hostPlatform.system}"];
 
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
@@ -15,14 +18,13 @@
     ! command -v wget > /dev/null && echo "wget not found: please install wget" && exit 1
     ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools" && exit 1
 
-    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/initrd-${pkgs.stdenv.hostPlatform.system}
-    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelTarget}-${pkgs.stdenv.hostPlatform.system}
+    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
+    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
     [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d '\n') && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d '\n')
     
-              # sudo                               # root                     # NixOS
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
       if [[ -e $i && -s $i ]]
       then 
@@ -46,7 +48,7 @@
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
-    kexec --load ./${kernelTarget}-${pkgs.stdenv.hostPlatform.system} --initrd=./initrd-${pkgs.stdenv.hostPlatform.system}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
+    kexec --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
     kexec -e
   '';
 in{
@@ -137,8 +139,8 @@ in{
 
   system.build.kexec = pkgs.runCommand "buildkexec" { } ''
     mkdir -p $out
-    ln -s ${config.system.build.kernel}/${kernelTarget}  $out/${kernelTarget}-${pkgs.stdenv.hostPlatform.system}
-    ln -s ${config.system.build.netbootRamdisk}/initrd  $out/initrd-${pkgs.stdenv.hostPlatform.system}
-    ln -s ${kexecScript}  $out/kexec-${pkgs.stdenv.hostPlatform.system}
+    ln -s ${config.system.build.kernel}/${kernelTarget}  $out/${kernelName}
+    ln -s ${config.system.build.netbootRamdisk}/initrd  $out/${initrdName}
+    ln -s ${kexecScript}  $out/${kexecScriptName}
   '';
 }
