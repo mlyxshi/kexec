@@ -25,9 +25,11 @@ jobs:
         cp -Lr --no-preserve=all buildout2 artifact
    
     - run: |
-        ls -alh buildout1
+        ls -l buildout1
+        ls -a buildout1
         echo "----------"
-        ls -alh buildout2
+        ls -l buildout2
+        ls -a buildout2
         echo "----------"
         ls -alh artifact
         echo "----------"
