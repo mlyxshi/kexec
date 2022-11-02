@@ -2,7 +2,56 @@
 # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
 # 2. Parameter Expansion  [source:man bash]
 
-{ pkgs, lib, config, modulesPath, ... }: {
+{ pkgs, lib, config, modulesPath, ... }: let
+
+  kexecScript = pkgs.writeScript "kexec-boot" ''
+    #!/usr/bin/env bash
+    set -e   
+    echo "Support Debian/Ubuntu/NixOS. For other distros, install wget kexec-tools manually"
+
+    # delete old version
+    [ -f "bzImage" ] && rm bzImage
+    [ -f "initrd" ] && rm initrd
+
+    command -v apt > /dev/null && apt install -y wget kexec-tools
+    ! command -v wget > /dev/null && echo "wget not found: please install wget" && exit 1
+    ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools" && exit 1
+
+    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/initrd
+    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
+
+    for arg in "$@"; do cmdScript+="$arg "; done
+  
+    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d '\n') && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d '\n')
+    
+              # sudo                               # root                     # NixOS
+    for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
+      if [[ -e $i && -s $i ]]
+      then 
+        echo "--------------------------------------------------"
+        echo "Get SSH key From $i"
+        sshkey=$(cat $i|base64|tr -d '\n')
+        break
+      fi     
+    done
+
+    echo "--------------------------------------------------"
+    echo "sshkey(base64): $sshkey"
+    echo "--------------------------------------------------"
+    echo "host_key(base64): $host_key"
+    echo "--------------------------------------------------"
+    echo "host_key_pub(base64): $host_key_pub"
+    echo "--------------------------------------------------"
+    echo "script_info: $@"
+    echo "--------------------------------------------------"
+
+    echo "Wait..."
+    echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
+
+    kexec --load ./bzImage --initrd=./initrd  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
+    kexec -e
+  '';
+in{
   
   imports = [
     (modulesPath + "/profiles/minimal.nix")
@@ -88,52 +137,10 @@
     '';
   };
 
-
-  system.build.kexecScript = lib.mkForce (pkgs.writeScript "kexec-boot" ''
-    #!/usr/bin/env bash
-    set -e   
-    echo "Support Debian/Ubuntu. For other distros, install wget kexec-tools manually"
-
-    # delete old version
-    [ -f "bzImage" ] && rm bzImage
-    [ -f "initrd.gz" ] && rm initrd.gz
-
-    command -v apt > /dev/null && apt install -y wget kexec-tools
-    ! command -v wget > /dev/null && echo "wget not found: please install wget" && exit 1
-    ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools" && exit 1
-
-    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/initrd.gz
-    wget -q --show-progress https://github.com/mlyxshi/kexec/releases/download/latest/bzImage
-
-    for arg in "$@"; do cmdScript+="$arg "; done
-  
-    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d '\n') && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d '\n')
-    
-              # sudo                               # root                     # NixOS
-    for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
-      if [[ -e $i && -s $i ]]
-      then 
-        echo "--------------------------------------------------"
-        echo "Get SSH key From $i"
-        sshkey=$(cat $i|base64|tr -d '\n')
-        break
-      fi     
-    done
-
-    echo "--------------------------------------------------"
-    echo "sshkey(base64): $sshkey"
-    echo "--------------------------------------------------"
-    echo "host_key(base64): $host_key"
-    echo "--------------------------------------------------"
-    echo "host_key_pub(base64): $host_key_pub"
-    echo "--------------------------------------------------"
-    echo "script_info: $@"
-    echo "--------------------------------------------------"
-
-    echo "Wait..."
-    echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
-
-    kexec --load ./bzImage --initrd=./initrd.gz  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
-    kexec -e
-  '');
+  system.build.kexec = pkgs.runCommand "buildkexec" { } ''
+    mkdir -p $out
+    ln -s ${config.system.build.kernel}/bzImage   $out/bzImage
+    ln -s ${config.system.build.netbootRamdisk}/initrd  $out/initrd
+    ln -s ${kexecScript}  $out/kexec-boot
+  '';
 }
