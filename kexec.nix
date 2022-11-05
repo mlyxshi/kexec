@@ -29,7 +29,7 @@
       if [[ -e $i && -s $i ]]
       then 
         echo "--------------------------------------------------"
-        echo "Get SSH key From $i"
+        echo "Get SSH key from: $i"
         sshkey=$(cat $i|base64|tr -d '\n')
         break
       fi     

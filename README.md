@@ -26,3 +26,12 @@ curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-x86_64-
 ```
 curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-aarch64-linux | bash -s script_url=AUTORUN_SCRIPT_URL  script_arg1=SCRIPT_ARG1 script_arg2=SCRIPT_ARG2 script_arg3=SCRIPT_ARG3
 ```
+
+## Disclaimer
+Only test on
+- Azure 
+  - B1s 
+    - Debian/Ubuntu x64
+- Oracle
+  - Ampere A1
+    - NixOS arm64 
