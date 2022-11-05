@@ -15,6 +15,8 @@ jobs:
       with:
         extra_nix_config: |
           extra-platforms = aarch64-linux
+          trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
+          substituters = https://cache.garnix.io
 
     - run: |
         nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec --out-link buildout1
