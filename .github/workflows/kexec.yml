@@ -15,8 +15,13 @@ jobs:
       with:
         extra_nix_config: |
           extra-platforms = aarch64-linux
-          trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-          substituters = https://cache.garnix.io
+          trusted-public-keys = mlyxshi.cachix.org-1:yc7GPiryyBn0HfiCXdmO1ECWKBhfwrjdIFnRSA4ct7s= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
+          substituters = https://mlyxshi.cachix.org https://cache.garnix.io
+    
+    - uses: cachix/cachix-action@v12
+      with:
+        name: mlyxshi
+        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
     - run: |
         nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec --out-link buildout1
