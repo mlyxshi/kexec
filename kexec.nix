@@ -7,7 +7,7 @@
   kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
   kernelName = lib.concatStrings ["${kernelTarget}" "-" "${pkgs.stdenv.hostPlatform.system}"];
   initrdName = lib.concatStrings ["initrd" "-" "${pkgs.stdenv.hostPlatform.system}"];
-  kexecScriptName= lib.concatStrings ["kexec" "-" "${pkgs.stdenv.hostPlatform.system}"];
+  kexecScriptName = lib.concatStrings ["kexec" "-" "${pkgs.stdenv.hostPlatform.system}"];
 
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
@@ -90,9 +90,9 @@ in{
 
     for opt in $(xargs -n1 -a /proc/cmdline)
     do
-      [[ $opt = sshkey=* ]] && sshkey="''${opt#sshkey=}"         
-      [[ $opt = host_key=* ]] && host_key="''${opt#host_key=}"       
-      [[ $opt = host_key_pub=* ]] && host_key_pub="''${opt#host_key_pub=}"
+      [[ $opt = sshkey=* ]] && sshkey="''${opt#sshkey=}" && continue       
+      [[ $opt = host_key=* ]] && host_key="''${opt#host_key=}" && continue  
+      [[ $opt = host_key_pub=* ]] && host_key_pub="''${opt#host_key_pub=}" && continue
     done
 
     [[ -n $sshkey ]] && echo $sshkey | base64 -d > /run/authorized_keys   
@@ -117,10 +117,10 @@ in{
 
       for opt in $(xargs -n1 -a /proc/cmdline)
       do
-        [[ $opt = script_url=* ]] && script_url="''${opt#script_url=}"
-        [[ $opt = script_arg1=* ]] && script_arg1="''${opt#script_arg1=}"
-        [[ $opt = script_arg2=* ]] && script_arg2="''${opt#script_arg2=}"
-        [[ $opt = script_arg3=* ]] && script_arg3="''${opt#script_arg3=}"     
+        [[ $opt = script_url=* ]] && script_url="''${opt#script_url=}" && continue
+        [[ $opt = script_arg1=* ]] && script_arg1="''${opt#script_arg1=}" && continue
+        [[ $opt = script_arg2=* ]] && script_arg2="''${opt#script_arg2=}" && continue
+        [[ $opt = script_arg3=* ]] && script_arg3="''${opt#script_arg3=}" && continue   
       done
 
       echo "SCRIPT_URL: $script_url"
