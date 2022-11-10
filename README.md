@@ -34,4 +34,6 @@ Only test on
     - Debian/Ubuntu x64
 - Oracle
   - Ampere A1
-    - NixOS arm64 
+    - Debian/Ubuntu/NixOS arm64 
+  - E2.1.Micro
+    - Debian/Ubuntu x64
