@@ -2,12 +2,13 @@
 # 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
 # 2. Parameter Expansion  [source:man bash]
 
-{ pkgs, lib, config, modulesPath, ... }: let
+{ pkgs, lib, config, modulesPath, ... }:
+let
 
   kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
-  kernelName = lib.concatStrings ["${kernelTarget}" "-" "${pkgs.stdenv.hostPlatform.system}"];
-  initrdName = lib.concatStrings ["initrd" "-" "${pkgs.stdenv.hostPlatform.system}"];
-  kexecScriptName = lib.concatStrings ["kexec" "-" "${pkgs.stdenv.hostPlatform.system}"];
+  kernelName = lib.concatStrings [ "${kernelTarget}" "-" "${pkgs.stdenv.hostPlatform.system}" ];
+  initrdName = lib.concatStrings [ "initrd" "-" "${pkgs.stdenv.hostPlatform.system}" ];
+  kexecScriptName = lib.concatStrings [ "kexec" "-" "${pkgs.stdenv.hostPlatform.system}" ];
 
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
@@ -51,8 +52,9 @@
     kexec --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
     kexec -e
   '';
-in{
-  
+in
+{
+
   imports = [
     (modulesPath + "/profiles/minimal.nix")
     (modulesPath + "/profiles/qemu-guest.nix") # Most QEMU VPS, like Oracle
@@ -65,17 +67,18 @@ in{
     htop
     tree
   ];
-   
+
   boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
-  
+
   networking.useNetworkd = true;
   networking.firewall.enable = false;
+  systemd.network.wait-online.anyInterface = true;
   services.getty.autologinUser = "root";
 
   services.openssh.enable = true;
-  services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ]; 
+  services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
   services.openssh.hostKeys = [{
     path = "/run/ssh_host_ed25519_key";
     type = "ed25519";
@@ -109,9 +112,9 @@ in{
     fi
   '';
 
-  
+
   systemd.services.process-cmdline-script = {
-    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" ];
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
 
@@ -128,13 +131,12 @@ in{
       echo "SCRIPT_ARG2: $script_arg2"
       echo "SCRIPT_ARG3: $script_arg3"
 
-      sleep 5 # wait dhcp network connection?
-
       echo "SCRIPT_CONTENT------------------------------------------------------------------------"
       [[ -n "$script_url" ]] && curl -sL $script_url
       echo "--------------------------------------------------------------------------------------"   
       [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_arg1 $script_arg2 $script_arg3   
     '';
+    wantedBy = [ "multi-user.target" ];
   };
 
   system.build.kexec = pkgs.runCommand "buildkexec" { } ''
