@@ -11,18 +11,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: docker/setup-qemu-action@v2
-    - uses: cachix/install-nix-action@v18
+    - uses: nixbuild/nix-quick-install-action@v19
       with:
-        extra_nix_config: |
+        nix_conf: |
+          experimental-features = nix-command flakes
           extra-platforms = aarch64-linux
-          trusted-public-keys = mlyxshi.cachix.org-1:yc7GPiryyBn0HfiCXdmO1ECWKBhfwrjdIFnRSA4ct7s= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-          substituters = https://mlyxshi.cachix.org https://cache.garnix.io
+          trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+          substituters = https://cache.garnix.io https://cache.nixos.org/
     
-    - uses: cachix/cachix-action@v12
-      with:
-        name: mlyxshi
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-
     - run: |
         nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec --out-link buildout1
         cp -Lr --no-preserve=all buildout1 artifact1
