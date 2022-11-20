@@ -62,10 +62,29 @@ in
 
   system.stateVersion = "22.11";
 
-  environment.systemPackages = with pkgs;[
+  environment.systemPackages = with pkgs; [
     htop
-    tree
+    lf # Terminal File Browser
+    neovim-unwrapped
   ];
+
+  environment.sessionVariables.EDITOR = "nvim";
+  environment.etc."lf/lfrc".text = ''
+    set hidden true
+    set number true
+    set drawbox true
+    set dircounts true
+    set incsearch true
+    set period 1
+
+    map q   quit
+    map Q   quit
+    map D   delete
+    map <enter> open
+  '';
+
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
   boot.kernelPackages = pkgs.linuxPackages_latest;
