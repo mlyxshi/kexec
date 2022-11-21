@@ -1,12 +1,6 @@
 name: build kexec
 on: [ push, workflow_dispatch ]
 
-env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  NIX_STORE_SIGN_PRIVATE: ${{ secrets.NIX_STORE_SIGN_PRIVATE }}
-  CACHE_PROXY_PORT: 5555 
-
 jobs:
   CI:
     runs-on: ubuntu-latest
@@ -15,24 +9,30 @@ jobs:
     - uses: pierotofy/set-swap-space@master
       with:
         swap-size-gb: 13
-    - uses: docker/setup-qemu-action@master
     - uses: nixbuild/nix-quick-install-action@master
       with:
         nix_conf: |
           experimental-features = nix-command flakes
-          extra-platforms = aarch64-linux
-          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.mlyxshi.com:qbWevQEhY/rV6wa21Jaivh+Lw2AArTFwCB2J6ll4xOI=
-          substituters = https://cache.nixos.org http://kexec.mlyxshi.com
+          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+          substituters = https://cache.nixos.org
 
-    - run: echo $NIX_STORE_SIGN_PRIVATE > /tmp/key
-    - run: node ${GITHUB_WORKSPACE}/proxy.js &
+    - run: |
+        mkdir -m 0755  ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
     
     - run: |
-        nix build --out-link buildout1  .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
-        cp -Lr --no-preserve=all buildout1 artifact1   
+        KEXEC_X86_64=$(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-x86_64.config.system.build.kexec)
+        cp -Lr --no-preserve=all $KEXEC_X86_64 artifact1   
+    
+    # Details: github:mlyxshi/flake/host/oracle/us1.nix
+    # Build aarch64 on Oracle ARM
     - run: |
-        nix build --out-link buildout2 .#nixosConfigurations.kexec-aarch64.config.system.build.kexec
-        cp -Lr --no-preserve=all buildout2 artifact2
+        KEXEC_AARCH64=$(ssh root@us1.mlyxshi.com buildkexec)
+        nix copy --no-check-sigs --from 'ssh://root@us1.mlyxshi.com'  $KEXEC_AARCH64  
+        cp -Lr --no-preserve=all $KEXEC_AARCH64 artifact2
+      env:
+        NIX_SSHOPTS: -o StrictHostKeyChecking=no
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -42,7 +42,3 @@ jobs:
         files: |
           artifact1/*
           artifact2/*
-
-    - run: nix copy --to 's3://kexec?scheme=http&endpoint=localhost:5555&secret-key=/tmp/key&parallel-compression=true&compression=zstd&compression-level=20' $(readlink buildout1)
-    - run: nix copy --to 's3://kexec?scheme=http&endpoint=localhost:5555&secret-key=/tmp/key&parallel-compression=true&compression=zstd&compression-level=20' $(readlink buildout2)
-        
