@@ -1,5 +1,5 @@
 name: build kexec
-on: [ workflow_dispatch,push ]
+on: [ workflow_dispatch ]
 jobs:
   CI:
     runs-on: ubuntu-latest
@@ -14,8 +14,8 @@ jobs:
         nix_conf: |
           experimental-features = nix-command flakes
           extra-platforms = aarch64-linux
-          trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-          substituters = https://cache.garnix.io https://cache.nixos.org/
+          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+          substituters = https://cache.nixos.org
     
     - run: cp -Lr --no-preserve=all $(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-x86_64.config.system.build.kexec) artifact1   
     - run: cp -Lr --no-preserve=all $(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-aarch64.config.system.build.kexec) artifact2
