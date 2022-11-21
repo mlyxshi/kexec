@@ -28,7 +28,7 @@ jobs:
     # Details: github:mlyxshi/flake/host/oracle/us1.nix
     # Build aarch64 on Oracle ARM
     - run: |
-        KEXEC_AARCH64=$(ssh root@us1.mlyxshi.com buildkexec)
+        KEXEC_AARCH64=$(ssh -o StrictHostKeyChecking=no root@us1.mlyxshi.com buildkexec)
         nix copy --no-check-sigs --from 'ssh://root@us1.mlyxshi.com'  $KEXEC_AARCH64  
         cp -Lr --no-preserve=all $KEXEC_AARCH64 artifact2
       env:
