@@ -1,5 +1,12 @@
 name: build kexec
-on: [ workflow_dispatch ]
+on: [ push, workflow_dispatch ]
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  NIX_STORE_SIGN_PRIVATE: ${{ secrets.NIX_STORE_SIGN_PRIVATE }}
+  CACHE_PROXY_PORT: 5555 
+
 jobs:
   CI:
     runs-on: ubuntu-latest
@@ -14,11 +21,18 @@ jobs:
         nix_conf: |
           experimental-features = nix-command flakes
           extra-platforms = aarch64-linux
-          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-          substituters = https://cache.nixos.org
+          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.mlyxshi.com:qbWevQEhY/rV6wa21Jaivh+Lw2AArTFwCB2J6ll4xOI=
+          substituters = https://cache.nixos.org http://kexec.mlyxshi.com
+
+    - run: echo $NIX_STORE_SIGN_PRIVATE > /tmp/key
+    - run: node ${GITHUB_WORKSPACE}/proxy.js &
     
-    - run: cp -Lr --no-preserve=all $(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-x86_64.config.system.build.kexec) artifact1   
-    - run: cp -Lr --no-preserve=all $(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-aarch64.config.system.build.kexec) artifact2
+    - run: |
+        nix build --out-link buildout1  .#nixosConfigurations.kexec-x86_64.config.system.build.kexec
+        cp -Lr --no-preserve=all buildout1 artifact1   
+    - run: |
+        nix build --out-link buildout2 .#nixosConfigurations.kexec-aarch64.config.system.build.kexec
+        cp -Lr --no-preserve=all buildout2 artifact2
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -28,3 +42,7 @@ jobs:
         files: |
           artifact1/*
           artifact2/*
+
+    - run: nix copy --to 's3://kexec?scheme=http&endpoint=localhost:5555&secret-key=/tmp/key&parallel-compression=true&compression=zstd&compression-level=20' $(readlink buildout1)
+    - run: nix copy --to 's3://kexec?scheme=http&endpoint=localhost:5555&secret-key=/tmp/key&parallel-compression=true&compression=zstd&compression-level=20' $(readlink buildout2)
+        
