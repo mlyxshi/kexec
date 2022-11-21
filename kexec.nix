@@ -86,7 +86,7 @@ in
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   # content addressed 
-  nixpkgs.config.contentAddressedByDefault = pkgs.stdenv.hostPlatform.isx86_64;
+  nixpkgs.config.contentAddressedByDefault = true;
 
   boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
   boot.kernelPackages = pkgs.linuxPackages_latest;
