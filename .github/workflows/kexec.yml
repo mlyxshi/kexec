@@ -1,7 +1,5 @@
 name: build kexec
 on: [ workflow_dispatch,push ]
-
-
 jobs:
   CI:
     runs-on: ubuntu-latest
@@ -20,12 +18,12 @@ jobs:
           substituters = https://cache.garnix.io https://cache.nixos.org/
     
     - run: |
-        nix build .#nixosConfigurations.kexec-x86_64.config.system.build.kexec --out-link buildout1
-        cp -Lr --no-preserve=all buildout1 artifact1
+        KEXEC_X86_64=$(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-x86_64.config.system.build.kexec)
+        cp -Lr --no-preserve=all $KEXEC_X86_64 artifact
     
     - run: |
-        nix build .#nixosConfigurations.kexec-aarch64.config.system.build.kexec --out-link buildout2
-        cp -Lr --no-preserve=all buildout2 artifact2
+        KEXEC_AARCH64=$(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-aarch64.config.system.build.kexec)
+        cp -Lr --no-preserve=all $KEXEC_AARCH64 artifact
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -33,5 +31,4 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: true
         files: |
-          artifact1/*
-          artifact2/*
+          artifact/*
