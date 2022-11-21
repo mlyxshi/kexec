@@ -17,13 +17,8 @@ jobs:
           trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
           substituters = https://cache.garnix.io https://cache.nixos.org/
     
-    - run: |
-        KEXEC_X86_64=$(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-x86_64.config.system.build.kexec)
-        cp -Lr --no-preserve=all $KEXEC_X86_64 artifact
-    
-    - run: |
-        KEXEC_AARCH64=$(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-aarch64.config.system.build.kexec)
-        cp -Lr --no-preserve=all $KEXEC_AARCH64 artifact
+    - run: cp -Lr --no-preserve=all $(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-x86_64.config.system.build.kexec) artifact1   
+    - run: cp -Lr --no-preserve=all $(nix build --no-link --print-out-paths .#nixosConfigurations.kexec-aarch64.config.system.build.kexec) artifact2
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -31,4 +26,5 @@ jobs:
         automatic_release_tag: "latest"
         prerelease: true
         files: |
-          artifact/*
+          artifact1/*
+          artifact2/*
