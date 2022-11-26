@@ -29,10 +29,7 @@ jobs:
     # Build aarch64 on Oracle ARM
     - run: |
         KEXEC_AARCH64=$(ssh -o StrictHostKeyChecking=no root@us1.mlyxshi.com buildkexec)
-        nix copy --no-check-sigs --from 'ssh://root@us1.mlyxshi.com'  $KEXEC_AARCH64  
-        cp -Lr --no-preserve=all $KEXEC_AARCH64 artifact2
-      env:
-        NIX_SSHOPTS: -o StrictHostKeyChecking=no
+        rsync -L -e "ssh -o StrictHostKeyChecking=no" root@us1.mlyxshi.com:$KEXEC_AARCH64/*  artifact2/
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
