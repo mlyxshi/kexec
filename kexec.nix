@@ -154,7 +154,7 @@ in
       echo "SCRIPT_ARG1: $script_arg1"
       echo "SCRIPT_ARG2: $script_arg2"
       echo "SCRIPT_ARG3: $script_arg3"
-      echo "SCRIPT_ARG3: $script_arg4"
+      echo "SCRIPT_ARG4: $script_arg4"
 
       echo "SCRIPT_CONTENT------------------------------------------------------------------------"
       [[ -n "$script_url" ]] && curl -sL $script_url
