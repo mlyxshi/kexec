@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# You need tweak this script to your needs
+# You need to tweak this script to your needs
 set -o errexit
 set -o nounset
 set -o pipefail
