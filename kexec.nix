@@ -1,6 +1,6 @@
 # https://github.com/NickCao/netboot/blob/master/flake.nix
-# 1. pattern matching with the double brackets [source:https://www.baeldung.com/linux/bash-single-vs-double-brackets]
-# 2. Parameter Expansion  [source:man bash]
+# 1. pattern matching with the double brackets [source: https://www.baeldung.com/linux/bash-single-vs-double-brackets]
+# 2. Parameter Expansion  [source: man bash]
 
 { pkgs, lib, config, modulesPath, ... }:
 let
@@ -91,7 +91,7 @@ in
   boot.supportedFilesystems = [ "btrfs" ];
 
   zramSwap.enable = true;
-  # Add swap (3x RAM), Max 3G
+  # Add swap (3xRAM), Max to 3G <-- Required for evaluation flake config, otherwise, VPS will OOM
   zramSwap.memoryMax= 3 * 1024 * 1024 * 1024;
   zramSwap.memoryPercent = 300; 
 
@@ -146,18 +146,20 @@ in
         [[ $opt = script_url=* ]] && script_url="''${opt#script_url=}" && continue
         [[ $opt = script_arg1=* ]] && script_arg1="''${opt#script_arg1=}" && continue
         [[ $opt = script_arg2=* ]] && script_arg2="''${opt#script_arg2=}" && continue
-        [[ $opt = script_arg3=* ]] && script_arg3="''${opt#script_arg3=}" && continue   
+        [[ $opt = script_arg3=* ]] && script_arg3="''${opt#script_arg3=}" && continue  
+        [[ $opt = script_arg4=* ]] && script_arg4="''${opt#script_arg4=}" && continue 
       done
 
       echo "SCRIPT_URL: $script_url"
       echo "SCRIPT_ARG1: $script_arg1"
       echo "SCRIPT_ARG2: $script_arg2"
       echo "SCRIPT_ARG3: $script_arg3"
+      echo "SCRIPT_ARG3: $script_arg4"
 
       echo "SCRIPT_CONTENT------------------------------------------------------------------------"
       [[ -n "$script_url" ]] && curl -sL $script_url
       echo "--------------------------------------------------------------------------------------"   
-      [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_arg1 $script_arg2 $script_arg3   
+      [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_arg1 $script_arg2 $script_arg3 $script_arg4 
     '';
     wantedBy = [ "multi-user.target" ];
   };
