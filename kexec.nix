@@ -90,6 +90,11 @@ in
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
 
+  zramSwap.enable = true;
+  # Add swap (3x RAM), Max 3G
+  zramSwap.memoryMax= 3 * 1024 * 1024 * 1024;
+  zramSwap.memoryPercent = 300; 
+
   networking.useNetworkd = true;
   networking.firewall.enable = false;
   systemd.network.wait-online.anyInterface = true;
