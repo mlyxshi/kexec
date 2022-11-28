@@ -5,19 +5,19 @@
 ## Usage
 #### kexec NixOS
 ```
-curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m)-linux | bash -s
+curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m) | bash -s
 ```
 
 
 #### kexec NixOS and run script automatically (optional)
 ```
-curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m)-linux | bash -s script_url=AUTORUN_SCRIPT_URL
+curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m) | bash -s script_url=AUTORUN_SCRIPT_URL
 ```
 
 
 #### add 1~4 script arguments (optional)
 ```
-curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m)-linux | bash -s script_url=AUTORUN_SCRIPT_URL  script_arg1=SCRIPT_ARG1 script_arg2=SCRIPT_ARG2 script_arg3=SCRIPT_ARG3 script_arg4=SCRIPT_ARG4
+curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m) | bash -s script_url=AUTORUN_SCRIPT_URL  script_arg1=SCRIPT_ARG1 script_arg2=SCRIPT_ARG2 script_arg3=SCRIPT_ARG3 script_arg4=SCRIPT_ARG4
 ```
 
 

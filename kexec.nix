@@ -5,9 +5,9 @@
 { pkgs, lib, config, modulesPath, ... }:
 let
   kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
-  kernelName = lib.concatStringsSep "-" [ "${kernelTarget}" "${pkgs.stdenv.hostPlatform.system}" ];
-  initrdName = lib.concatStringsSep "-" [ "initrd" "${pkgs.stdenv.hostPlatform.system}" ];
-  kexecScriptName = lib.concatStringsSep "-" [ "kexec" "${pkgs.stdenv.hostPlatform.system}" ];
+  kernelName = lib.concatStringsSep "-" [ "${kernelTarget}" "${pkgs.stdenv.hostPlatform.linuxArch}" ];
+  initrdName = lib.concatStringsSep "-" [ "initrd" "${pkgs.stdenv.hostPlatform.linuxArch}" ];
+  kexecScriptName = lib.concatStringsSep "-" [ "kexec" "${pkgs.stdenv.hostPlatform.linuxArch}" ];
 
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
@@ -98,7 +98,7 @@ in
   boot.kernelParams = [ "panic=1" "boot.panic_on_fail" ]; 
 
   zramSwap.enable = true;
-  # Add swap (3xRAM), Max to 3G <-- Required for evaluation flake config, otherwise, VPS will OOM
+  # Add swap (3xRAM), Max to 3G <-- Required for evaluation flake config, otherwise, VPS with 1G RAM will OOM
   zramSwap.memoryMax= 3 * 1024 * 1024 * 1024;
   zramSwap.memoryPercent = 300; 
 
