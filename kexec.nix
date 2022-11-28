@@ -93,7 +93,9 @@ in
   boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
-  boot.kernelParams = [ "panic=30" "boot.panic_on_fail" ]; # reboot the machine upon fatal boot issues
+  # panic=1: reboot the machine upon fatal boot issues, timeout 1s [source: https://docs.kernel.org/admin-guide/kernel-parameters.html]
+  # boot.panic_on_fail: [source: https://github.com/NixOS/nixpkgs/blob/93de6bf9ed923bf2d0991db61c2fd127f6e984ae/nixos/modules/system/boot/stage-1-init.sh#L200]
+  boot.kernelParams = [ "panic=1" "boot.panic_on_fail" ]; 
 
   zramSwap.enable = true;
   # Add swap (3xRAM), Max to 3G <-- Required for evaluation flake config, otherwise, VPS will OOM
