@@ -5,9 +5,9 @@
 { pkgs, lib, config, modulesPath, ... }:
 let
   kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
-  kernelName = lib.concatStringsSep "-" [ "${kernelTarget}" "${pkgs.stdenv.hostPlatform.linuxArch}" ];
-  initrdName = lib.concatStringsSep "-" [ "initrd" "${pkgs.stdenv.hostPlatform.linuxArch}" ];
-  kexecScriptName = lib.concatStringsSep "-" [ "kexec" "${pkgs.stdenv.hostPlatform.linuxArch}" ];
+  kernelName = "${kernelTarget}-${pkgs.stdenv.hostPlatform.uname.processor}";
+  initrdName = "initrd-${pkgs.stdenv.hostPlatform.uname.processor}";
+  kexecScriptName = "kexec-${pkgs.stdenv.hostPlatform.uname.processor}";
 
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
