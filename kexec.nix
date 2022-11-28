@@ -5,7 +5,7 @@
 { pkgs, lib, config, modulesPath, ... }:
 let
   kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
-  kernelName = "${kernelTarget}-${pkgs.stdenv.hostPlatform.uname.processor}";
+  kernelName = "${kernelTarget}-${pkgs.stdenv.hostPlatform.uname.processor}"; #https://github.com/NixOS/nixpkgs/blob/93de6bf9ed923bf2d0991db61c2fd127f6e984ae/lib/systems/default.nix#L103
   initrdName = "initrd-${pkgs.stdenv.hostPlatform.uname.processor}";
   kexecScriptName = "kexec-${pkgs.stdenv.hostPlatform.uname.processor}";
 
