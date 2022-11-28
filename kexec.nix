@@ -17,6 +17,7 @@ let
     set -e   
 
     curl -sL -O https://github.com/mlyxshi/kexec/releases/download/latest/${wget-musl-bin}
+    chmod +x ./${wget-musl-bin}
     ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kexec-musl-bin}
     ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
     ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
@@ -47,6 +48,7 @@ let
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
+    chmod +x ./${kexec-musl-bin}
     ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
     
     if [[ -d /run/systemd/system ]] && command -v systemctl >/dev/null; then
