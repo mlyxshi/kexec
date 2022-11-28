@@ -26,8 +26,7 @@ let
     [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d '\n') && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d '\n')
     
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
-      if [[ -e $i && -s $i ]]
-      then 
+      if [[ -e $i && -s $i ]]; then 
         echo "--------------------------------------------------"
         echo "Get SSH key from: $i"
         sshkey=$(cat $i|base64|tr -d '\n')
@@ -48,8 +47,13 @@ let
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
-    kexec --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
-    kexec -e
+    kexec --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
+    
+    if [[ -d /run/systemd/system ]] && command -v systemctl >/dev/null; then
+      systemctl kexec
+    else
+      kexec -e
+fi
   '';
 in
 {
