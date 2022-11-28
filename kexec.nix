@@ -49,13 +49,8 @@ let
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
     chmod +x ./${kexec-musl-bin}
-    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
-    
-    if [[ -d /run/systemd/system ]] && command -v systemctl >/dev/null; then
-      systemctl kexec
-    else
-      ./${kexec-musl-bin} -e
-    fi
+    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"
+    ./${kexec-musl-bin} -e
   '';
 in
 {
