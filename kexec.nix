@@ -53,7 +53,7 @@ let
       systemctl kexec
     else
       kexec -e
-fi
+    fi
   '';
 in
 {
@@ -93,6 +93,7 @@ in
   boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
+  boot.kernelParams = [ "panic=30" "boot.panic_on_fail" ]; # reboot the machine upon fatal boot issues
 
   zramSwap.enable = true;
   # Add swap (3xRAM), Max to 3G <-- Required for evaluation flake config, otherwise, VPS will OOM
