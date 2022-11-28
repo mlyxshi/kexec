@@ -5,21 +5,21 @@
 { pkgs, lib, config, modulesPath, ... }:
 let
   kernelTarget = pkgs.stdenv.hostPlatform.linux-kernel.target;
-  kernelName = "${kernelTarget}-${pkgs.stdenv.hostPlatform.uname.processor}"; #https://github.com/NixOS/nixpkgs/blob/93de6bf9ed923bf2d0991db61c2fd127f6e984ae/lib/systems/default.nix#L103
-  initrdName = "initrd-${pkgs.stdenv.hostPlatform.uname.processor}";
-  kexecScriptName = "kexec-${pkgs.stdenv.hostPlatform.uname.processor}";
+  arch = pkgs.stdenv.hostPlatform.uname.processor;  #https://github.com/NixOS/nixpkgs/blob/93de6bf9ed923bf2d0991db61c2fd127f6e984ae/lib/systems/default.nix#L103
+  kernelName = "${kernelTarget}-${arch}";
+  initrdName = "initrd-${arch}";
+  kexecScriptName = "kexec-${arch}";
+  kexec-musl-bin = "kexec-musl-${arch}";
+  wget-musl-bin = "wget-musl-${arch}";
 
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
     set -e   
-    echo "Support Debian/Ubuntu/NixOS. For other distros, install wget kexec-tools manually"
 
-    command -v apt > /dev/null && apt install -y wget kexec-tools
-    ! command -v wget > /dev/null && echo "wget not found: please install wget" && exit 1
-    ! command -v kexec > /dev/null && echo "kexec not found: please install kexec-tools" && exit 1
-
-    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
-    wget -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
+    curl -sL -O https://github.com/mlyxshi/kexec/releases/download/latest/${wget-musl-bin}
+    ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kexec-musl-bin}
+    ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
+    ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
@@ -47,12 +47,12 @@ let
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
 
-    kexec --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
+    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey}   ''${host_key:+host_key=''$host_key}  ''${host_key_pub:+host_key_pub=''$host_key_pub}  $cmdScript"  
     
     if [[ -d /run/systemd/system ]] && command -v systemctl >/dev/null; then
       systemctl kexec
     else
-      kexec -e
+      ./${kexec-musl-bin} -e
     fi
   '';
 in
@@ -176,5 +176,7 @@ in
     ln -s ${config.system.build.kernel}/${kernelTarget}  $out/${kernelName}
     ln -s ${config.system.build.netbootRamdisk}/initrd  $out/${initrdName}
     ln -s ${kexecScript}  $out/${kexecScriptName}
+    ln -s ${pkgs.pkgsStatic.kexec-tools}/bin/kexec    $out/${kexec-musl-bin}
+    ln -s ${pkgs.pkgsStatic.wget}/bin/wget    $out/${wget-musl-bin}
   '';
 }
