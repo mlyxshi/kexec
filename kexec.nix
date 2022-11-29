@@ -59,7 +59,7 @@ let
 
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
-    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line $kernel_param
+    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "$kernel_param"
     ./${kexec-musl-bin} -e
   '';
 in
