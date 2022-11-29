@@ -90,7 +90,6 @@ in
     map q   quit
     map Q   quit
     map D   delete
-    map <enter> open
   '';
 
 
@@ -100,10 +99,10 @@ in
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
 
-  zramSwap.enable = true;
-  # Add swap (3xRAM), Max to 3G <-- Required for evaluation flake config, otherwise, VPS with 1G RAM will OOM
-  zramSwap.memoryMax= 3 * 1024 * 1024 * 1024;
-  zramSwap.memoryPercent = 300; 
+  boot.kernel.sysctl."vm.swappiness" = 100;
+  zramSwap.enable = true; # Enable zram, otherwise machine below 1GB RAM will OOM when evluating nix flake config
+  zramSwap.memoryPercent = 200;
+  zramSwap.memoryMax= 2 * 1024 * 1024 * 1024;
 
   networking.useNetworkd = true;
   networking.firewall.enable = false;
