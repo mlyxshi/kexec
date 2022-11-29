@@ -55,7 +55,7 @@ let
    
     kernel_param="init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey} ''${host_key:+host_key=''$host_key} ''${host_key_pub:+host_key_pub=''$host_key_pub} $cmdScript"
     kernel_param_size=''${#kernel_param}
-    [[ $kernel_param_size > 2048 ]] && echo "Error: kernel parameter size: $kernel_param_size > 2048, use ed25519 authorized_keys instead" && exit 1
+    [[ $kernel_param_size -gt 2048 ]] && echo "Error: kernel parameter size: $kernel_param_size > 2048, use ed25519 authorized_keys instead" && exit 1
 
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
