@@ -46,9 +46,6 @@ let
     echo "script_info: $@"
     echo "--------------------------------------------------"
 
-    echo "Wait..."
-    echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
-
     # aarch64 default kernel parameter size: 2048 bytes [https://github.com/torvalds/linux/blob/b7b275e60bcd5f89771e865a8239325f86d9927d/arch/arm64/include/uapi/asm/setup.h#L25]
     # x86_64  default kernel parameter size: 2048 bytes [https://github.com/torvalds/linux/blob/b7b275e60bcd5f89771e865a8239325f86d9927d/arch/x86/include/asm/setup.h#L7]
     # 2048 bytes is enough for most cases, but you still need to be careful about autorun script parameter size
@@ -58,8 +55,10 @@ let
    
     kernel_param="init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey} ''${host_key:+host_key=''$host_key} ''${host_key_pub:+host_key_pub=''$host_key_pub} $cmdScript"
     kernel_param_size=''${#kernel_param}
-    [[ $kernel_param_size > 2048 ]] && echo "Kernel parameter size: $kernel_param_size > 2048, use ed25519 authorized_keys instead" && exit 1
+    [[ $kernel_param_size > 2048 ]] && echo "Error: kernel parameter size: $kernel_param_size > 2048, use ed25519 authorized_keys instead" && exit 1
 
+    echo "Wait..."
+    echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
     ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line $kernel_param
     ./${kexec-musl-bin} -e
   '';
