@@ -34,7 +34,7 @@ let
     done
 
     for p in /etc/ssh/ssh_host_*; do
-      cp -a "$p" ssh
+      cp "$p" ssh
     done
 
     find | cpio -o -H newc | gzip -9 > ../extra.gz
