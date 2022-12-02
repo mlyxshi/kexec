@@ -1,4 +1,4 @@
-# pass kernel parameter and get it form systtemd service
+# pass kernel parameter and get it from systemd service
 https://github.com/NickCao/netboot/blob/master/flake.nix
 pattern matching with the double brackets [source: https://www.baeldung.com/linux/bash-single-vs-double-brackets]
 Parameter Expansion  [source: man bash]

@@ -22,10 +22,8 @@ let
   
 
     INITRD_TMP=$(mktemp -d --tmpdir=.)
-    cd "$INITRD_TMP"
-    pwd
-    mkdir -p initrd/ssh
-    pushd initrd
+    cd "$INITRD_TMP" && pwd
+    mkdir -p initrd/ssh && cd initrd
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
       if [[ -e $i && -s $i ]]; then 
         echo "--------------------------------------------------"
@@ -40,9 +38,8 @@ let
     done
 
     find | cpio -o -H newc | gzip -9 > ../extra.gz
-    popd
-    cat extra.gz >> ../${initrdName}
-    rm -r "$INITRD_TMP"
+    cd .. && cat extra.gz >> ../${initrdName}
+    cd .. && rm -r "$INITRD_TMP"
 
     echo "--------------------------------------------------"
     echo "script_info: $@"
@@ -104,7 +101,7 @@ in
   boot.initrd.postMountCommands = ''
     mkdir -m 700 -p /mnt-root/root/.ssh
     mkdir -m 755 -p /mnt-root/etc/ssh
-    [[ -f ssh/authorized_keys ]] && install -m 400 ssh/authorized_keys /mnt-root/root/.ssh
+    install -m 400 ssh/authorized_keys /mnt-root/root/.ssh
     install -m 400 ssh/ssh_host_* /mnt-root/etc/ssh
   '';
 
