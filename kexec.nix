@@ -1,7 +1,3 @@
-# https://github.com/NickCao/netboot/blob/master/flake.nix
-# 1. pattern matching with the double brackets [source: https://www.baeldung.com/linux/bash-single-vs-double-brackets]
-# 2. Parameter Expansion  [source: man bash]
-
 { pkgs, lib, config, modulesPath, ... }:
 let
   kernelTarget = pkgs.hostPlatform.linux-kernel.target;
@@ -24,41 +20,36 @@ let
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
-    [[ -f /etc/ssh/ssh_host_ed25519_key ]] && host_key=$(cat /etc/ssh/ssh_host_ed25519_key|base64|tr -d '\n') && host_key_pub=$(cat /etc/ssh/ssh_host_ed25519_key.pub|base64|tr -d '\n')
-    
+
+    INITRD_TMP=$(mktemp -d --tmpdir=.)
+    cd "$INITRD_TMP"
+    pwd
+    mkdir -p initrd/ssh
+    pushd initrd
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
       if [[ -e $i && -s $i ]]; then 
         echo "--------------------------------------------------"
         echo "Get SSH key from: $i"
-        sshkey=$(cat $i|base64|tr -d '\n')
+        cat $i >> ssh/authorized_keys
         break
       fi     
     done
 
-    echo "--------------------------------------------------"
-    echo "sshkey(base64): $sshkey"
-    echo "--------------------------------------------------"
-    echo "host_key(base64): $host_key"
-    echo "--------------------------------------------------"
-    echo "host_key_pub(base64): $host_key_pub"
+    for p in /etc/ssh/ssh_host_*; do
+      cp -a "$p" ssh
+    done
+
+    find | cpio -o -H newc | gzip -9 > ../extra.gz
+    popd
+    cat extra.gz >> ../${initrdName}
+    rm -r "$INITRD_TMP"
+
     echo "--------------------------------------------------"
     echo "script_info: $@"
     echo "--------------------------------------------------"
-
-    # aarch64 default kernel parameter size: 2048 bytes [https://github.com/torvalds/linux/blob/b7b275e60bcd5f89771e865a8239325f86d9927d/arch/arm64/include/uapi/asm/setup.h#L25]
-    # x86_64  default kernel parameter size: 2048 bytes [https://github.com/torvalds/linux/blob/b7b275e60bcd5f89771e865a8239325f86d9927d/arch/x86/include/asm/setup.h#L7]
-    # 2048 bytes is enough for most cases, but you still need to be careful about total kernel parameter size
-    # authorized_keys:[rsa 4096 public key(840 bytes in base64 format) OR ed25519 public key(140 bytes in base64 format)]
-    # ssh_host_ed25519_key:[ed25519 private key(560 bytes in base64 format)]
-    # ssh_host_ed25519_key.pub:[ed25519 public key(140 bytes in base64 format)]
-   
-    kernel_param="init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} ''${sshkey:+sshkey=''$sshkey} ''${host_key:+host_key=''$host_key} ''${host_key_pub:+host_key_pub=''$host_key_pub} $cmdScript"
-    kernel_param_size=''${#kernel_param}
-    [[ $kernel_param_size -gt 2046 ]] && echo "Error: kernel parameter size: $kernel_param_size > 2046, use ed25519 authorized_keys instead" && exit 1
-
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
-    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "$kernel_param"
+    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $cmdScript"
     ./${kexec-musl-bin} -e
   '';
 in
@@ -70,7 +61,7 @@ in
     (modulesPath + "/installer/netboot/netboot.nix")
   ];
 
-  system.stateVersion = "22.11";
+  system.stateVersion = "23.05";
 
   environment.systemPackages = with pkgs; [
     htop
@@ -108,42 +99,14 @@ in
   networking.firewall.enable = false;
   systemd.network.wait-online.anyInterface = true;
   services.getty.autologinUser = "root";
-
   services.openssh.enable = true;
-  services.openssh.authorizedKeysFiles = [ "/run/authorized_keys" ];
-  services.openssh.hostKeys = [{
-    path = "/run/ssh_host_ed25519_key";
-    type = "ed25519";
-  }];
 
-  # Overwrite /run/ssh_host_ed25519_key and /run/ssh_host_ed25519_key.pub to the original one, so we don't need "ssh-keygen -R IP"
-  # https://github.com/NixOS/nixpkgs/blob/26eb67abc9a7370a51fcb86ece18eaf19ae9207f/nixos/modules/services/networking/ssh/sshd.nix#L435
-  systemd.services.sshd.preStart = lib.mkForce ''
-    mkdir -m 0755 -p /etc/ssh
-
-    export PATH=/run/current-system/sw/bin:$PATH
-
-    for opt in $(xargs -n1 -a /proc/cmdline)
-    do
-      [[ $opt = sshkey=* ]] && sshkey="''${opt#sshkey=}" && continue       
-      [[ $opt = host_key=* ]] && host_key="''${opt#host_key=}" && continue  
-      [[ $opt = host_key_pub=* ]] && host_key_pub="''${opt#host_key_pub=}" && continue
-    done
-
-    [[ -n $sshkey ]] && echo $sshkey | base64 -d > /run/authorized_keys   
-    
-    if [[ -n $host_key && -n $host_key_pub ]]
-    then
-      echo $host_key | base64 -d > /run/ssh_host_ed25519_key
-      echo $host_key_pub | base64 -d > /run/ssh_host_ed25519_key.pub
-
-      chmod 600 /run/ssh_host_ed25519_key
-      chmod 644 /run/ssh_host_ed25519_key.pub   
-    else 
-      ssh-keygen -t "ed25519" -f "/run/ssh_host_ed25519_key" -N ""  
-    fi
+  boot.initrd.postMountCommands = ''
+    mkdir -m 700 -p /mnt-root/root/.ssh
+    mkdir -m 755 -p /mnt-root/etc/ssh
+    [[ -f ssh/authorized_keys ]] && install -m 400 ssh/authorized_keys /mnt-root/root/.ssh
+    install -m 400 ssh/ssh_host_* /mnt-root/etc/ssh
   '';
-
 
   systemd.services.process-cmdline-script = {
     after = [ "network-online.target" ];
