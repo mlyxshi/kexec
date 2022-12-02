@@ -18,7 +18,15 @@ let
     ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
     ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
 
-    for arg in "$@"; do cmdScript+="$arg "; done
+    for arg in "$@"
+    do
+      # script_args escape double quotes manually
+      if [[ $arg = script_args=* ]]; then
+        arg="script_args=\"''${arg#script_args=}\""
+      fi   
+      cmdScript+="$arg "
+    done
+
   
     INITRD_TMP=$(mktemp -d --tmpdir=.)
     cd "$INITRD_TMP" 
@@ -84,7 +92,7 @@ in
   boot.supportedFilesystems = [ "btrfs" ];
 
   boot.kernel.sysctl."vm.swappiness" = 100;
-  zramSwap.enable = true; # Enable zram, otherwise machine below 1GB RAM will OOM when evluating nix flake config
+  zramSwap.enable = true; # Enable zram, otherwise machine below 1GB RAM will OOM when evaluating nix flake config
   zramSwap.memoryPercent = 200;
   zramSwap.memoryMax= 2 * 1024 * 1024 * 1024;
 
@@ -109,22 +117,14 @@ in
       for opt in $(xargs -n1 -a /proc/cmdline)
       do
         [[ $opt = script_url=* ]] && script_url="''${opt#script_url=}" && continue
-        [[ $opt = script_arg1=* ]] && script_arg1="''${opt#script_arg1=}" && continue
-        [[ $opt = script_arg2=* ]] && script_arg2="''${opt#script_arg2=}" && continue
-        [[ $opt = script_arg3=* ]] && script_arg3="''${opt#script_arg3=}" && continue  
-        [[ $opt = script_arg4=* ]] && script_arg4="''${opt#script_arg4=}" && continue 
+        [[ $opt = script_args=* ]] && script_args="''${opt#script_args=}" && continue
       done
 
       echo "SCRIPT_URL: $script_url"
-      echo "SCRIPT_ARG1: $script_arg1"
-      echo "SCRIPT_ARG2: $script_arg2"
-      echo "SCRIPT_ARG3: $script_arg3"
-      echo "SCRIPT_ARG4: $script_arg4"
+      echo "SCRIPT_ARGS: $script_args"
 
-      echo "SCRIPT_CONTENT------------------------------------------------------------------------"
-      [[ -n "$script_url" ]] && curl -sL $script_url
       echo "--------------------------------------------------------------------------------------"   
-      [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_arg1 $script_arg2 $script_arg3 $script_arg4 
+      [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_args
     '';
     wantedBy = [ "multi-user.target" ];
   };
