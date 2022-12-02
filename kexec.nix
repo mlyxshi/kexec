@@ -21,9 +21,7 @@ let
     for arg in "$@"
     do
       # script_args escape double quotes manually
-      if [[ $arg = script_args=* ]]; then
-        arg="script_args=\"''${arg#script_args=}\""
-      fi   
+      [[ $arg = script_args=* ]] && arg="script_args=\"''${arg#script_args=}\""   
       cmdScript+="$arg "
     done
 
@@ -113,6 +111,7 @@ in
     after = [ "network-online.target" ];
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
+      IFS=$'\n' #for loop split by newline, otherwise it will split by space
 
       for opt in $(xargs -n1 -a /proc/cmdline)
       do
@@ -121,9 +120,7 @@ in
       done
 
       echo "SCRIPT_URL: $script_url"
-      echo "SCRIPT_ARGS: $script_args"
-
-      echo "--------------------------------------------------------------------------------------"   
+      echo "SCRIPT_ARGS: $script_args"  
       [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_args
     '';
     wantedBy = [ "multi-user.target" ];
@@ -131,10 +128,10 @@ in
 
   system.build.kexec = pkgs.runCommand "buildkexec" { } ''
     mkdir -p $out
-    ln -s ${config.system.build.kernel}/${kernelTarget}  $out/${kernelName}
+    ln -s ${config.system.build.kernel}/${kernelTarget} $out/${kernelName}
     ln -s ${config.system.build.netbootRamdisk}/initrd  $out/${initrdName}
-    ln -s ${kexecScript}  $out/${kexecScriptName}
-    ln -s ${pkgs.pkgsStatic.kexec-tools}/bin/kexec    $out/${kexec-musl-bin}
-    ln -s ${pkgs.pkgsStatic.wget}/bin/wget    $out/${wget-musl-bin}
+    ln -s ${kexecScript}                                $out/${kexecScriptName}
+    ln -s ${pkgs.pkgsStatic.kexec-tools}/bin/kexec      $out/${kexec-musl-bin}
+    ln -s ${pkgs.pkgsStatic.wget}/bin/wget              $out/${wget-musl-bin}
   '';
 }
