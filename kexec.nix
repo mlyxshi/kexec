@@ -119,8 +119,8 @@ in
         [[ $opt = script_args=* ]] && script_args="''${opt#script_args=}" && continue
       done
 
-      echo "SCRIPT_URL: $script_url"
-      echo "SCRIPT_ARGS: $script_args"  
+      echo $script_url
+      echo $script_args  
       [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_args
     '';
     wantedBy = [ "multi-user.target" ];
