@@ -20,7 +20,6 @@ let
 
     for arg in "$@"; do cmdScript+="$arg "; done
   
-
     INITRD_TMP=$(mktemp -d --tmpdir=.)
     cd "$INITRD_TMP" 
     mkdir -p initrd/ssh && cd initrd
@@ -32,9 +31,7 @@ let
       fi     
     done
 
-    for p in /etc/ssh/ssh_host_*; do
-      cp "$p" ssh
-    done
+    for i in /etc/ssh/ssh_host_*; do cp $i ssh; done
 
     find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
     cd .. && cat extra.gz >> ../${initrdName}
