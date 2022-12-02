@@ -121,6 +121,8 @@ in
 
       echo $script_url
       echo $script_args  
+      [[ -n "$script_args" ]] && script_args=$(echo "$script_args" | tr -d '"')  # remove double quotes
+
       [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_args
     '';
     wantedBy = [ "multi-user.target" ];
