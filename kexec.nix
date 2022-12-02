@@ -22,14 +22,13 @@ let
   
 
     INITRD_TMP=$(mktemp -d --tmpdir=.)
-    cd "$INITRD_TMP" && pwd
+    cd "$INITRD_TMP" 
     mkdir -p initrd/ssh && cd initrd
     for i in /home/$SUDO_USER/.ssh/authorized_keys /root/.ssh/authorized_keys /etc/ssh/authorized_keys.d/root; do
       if [[ -e $i && -s $i ]]; then 
         echo "--------------------------------------------------"
         echo "Get SSH key from: $i"
         cat $i >> ssh/authorized_keys
-        break
       fi     
     done
 
@@ -37,12 +36,12 @@ let
       cp "$p" ssh
     done
 
-    find | cpio -o -H newc | gzip -9 > ../extra.gz
+    find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
     cd .. && cat extra.gz >> ../${initrdName}
     cd .. && rm -r "$INITRD_TMP"
 
     echo "--------------------------------------------------"
-    echo "script_info: $@"
+    echo "Script Info: $@"
     echo "--------------------------------------------------"
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
