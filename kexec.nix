@@ -97,6 +97,7 @@ in
     [[ -f autorun.sh ]] && install -m 700 autorun.sh /mnt-root/etc
     [[ -f autorunParameters ]] && install -m 700 autorunParameters /mnt-root/etc
 
+    mkdir -p /mnt-root/root/.config/nvim/
     cat > /mnt-root/root/.config/nvim/init.lua  <<EOF
     vim.keymap.set("n", "Q", ":qa<CR>")
     vim.keymap.set("n", "ZQ", ":qa!<CR>")
