@@ -28,9 +28,7 @@ let
 
     for i in /etc/ssh/ssh_host_*; do cp $i ssh; done
    
-    echo "--------------------------------------------------"
-    echo "Script Info: $@"
-    [[ -n "$1" ]] && echo "Downloading AutoRun Script" && curl -Lo autorun.sh "$1"
+    [[ -n "$1" ]] && echo "--------------------------------------------------" && echo "Downloading AutoRun Script" && curl -Lo autorun.sh "$1"
     for arg in "''${@:2}"; do echo $arg >> autorunParameters; done      # begin at the second argument
   
     find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
