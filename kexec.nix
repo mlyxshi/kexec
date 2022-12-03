@@ -115,7 +115,6 @@ in
     after = [ "network-online.target" ];
     unitConfig.ConditionPathExists = "/etc/autorun.sh";
     script = ''
-      export PATH=/run/current-system/sw/bin:$PATH
       if [[ -f /etc/autorunParameters ]]; then
         mapfile args < /etc/autorunParameters
         bash /etc/autorun.sh ''${args[@]}
@@ -135,3 +134,14 @@ in
     ln -s ${pkgs.pkgsStatic.wget}/bin/wget              $out/${wget-musl-bin}
   '';
 }
+
+
+
+# Reference: 
+# initrd
+# https://github.com/nix-community/nixos-images/blob/main/nix/kexec-installer/module.nix
+# https://unix.stackexchange.com/questions/163346/why-is-it-that-my-initrd-only-has-one-directory-namely-kernel
+# https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/system/boot/stage-1-init.sh
+# https://landley.net/writing/rootfs-intro.html
+# https://landley.net/writing/rootfs-howto.html
+# https://landley.net/writing/rootfs-programming.html
