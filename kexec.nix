@@ -66,20 +66,10 @@ in
     set dircounts true
     set incsearch true
     set period 1
-
     map Q   quit
     map D   delete
-    cmd open $EDITOR "$f"
+    cmd open ''${{ $EDITOR "$f"}}
   '';
-  environment.etc."xdg/nvim/init.lua".text = ''
-    -- Consistent with lf exit
-    -- ZQ all Quit Without Save
-    -- ZZ all Quit With Save
-    vim.keymap.set("n", "Q", ":qa<CR>")
-    vim.keymap.set("n", "ZQ", ":qa!<CR>")
-    vim.keymap.set("n", "ZZ", ":wa|:qa<CR>")
-  '';
-
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -106,6 +96,12 @@ in
 
     [[ -f autorun.sh ]] && install -m 700 autorun.sh /mnt-root/etc
     [[ -f autorunParameters ]] && install -m 700 autorunParameters /mnt-root/etc
+
+    cat > /mnt-root/root/.config/nvim/init.lua  <<EOF
+    vim.keymap.set("n", "Q", ":qa<CR>")
+    vim.keymap.set("n", "ZQ", ":qa!<CR>")
+    vim.keymap.set("n", "ZZ", ":wa|:qa<CR>")
+    EOF
   '';
 
   systemd.services.autorun-script = {
