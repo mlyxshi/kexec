@@ -11,9 +11,9 @@ let
     #!/usr/bin/env bash
     set -e   
 
-    echo "Downloading kexec-musl-bin" && curl -sLO https://github.com/mlyxshi/kexec/releases/download/latest/${kexec-musl-bin} && chmod +x ./${kexec-musl-bin}
-    echo "Downloading initrd" && curl -sLO https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
-    echo "Downloading kernel" && curl -sLO https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
+    echo "Downloading kexec-musl-bin" && curl -LO https://github.com/mlyxshi/kexec/releases/download/latest/${kexec-musl-bin} && chmod +x ./${kexec-musl-bin}
+    echo "Downloading initrd" && curl -LO https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
+    echo "Downloading kernel" && curl -LO https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
  
     INITRD_TMP=$(mktemp -d --tmpdir=.)
     cd "$INITRD_TMP" 
@@ -28,15 +28,15 @@ let
 
     for i in /etc/ssh/ssh_host_*; do cp $i ssh; done
    
-    [[ -n "$1" ]] && curl -sLo autorun.sh "$1"
-    for arg in "''${@:2}"; do echo $arg >> autorunParameters; done      #begin at the second argument
+    echo "--------------------------------------------------"
+    echo "Script Info: $@"
+    [[ -n "$1" ]] && echo "Downloading AutoRun Script" && curl -Lo autorun.sh "$1"
+    for arg in "''${@:2}"; do echo $arg >> autorunParameters; done      # begin at the second argument
   
     find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
     cd .. && cat extra.gz >> ../${initrdName}
     cd .. && rm -r "$INITRD_TMP"
 
-    echo "--------------------------------------------------"
-    echo "Script Info: $@"
     echo "--------------------------------------------------"
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
