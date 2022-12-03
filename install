@@ -27,7 +27,7 @@ mount /dev/sda2 /mnt
 mkdir /mnt/boot
 mount /dev/sda1 /mnt/boot
 
-[[ -n "$2" ]] && mkdir -p /mnt/var/lib/age/ && curl -sL -o /mnt/var/lib/age/sshkey "$KEY_URL"
+[[ -n "$2" ]] && mkdir -p /mnt/var/lib/age/ && curl -sLo /mnt/var/lib/age/sshkey "$KEY_URL"
 
 nixos-install --root /mnt --flake $FLAKE_URL#$HOST --no-channel-copy --no-root-passwd \
 --option extra-trusted-public-keys "cache.mlyxshi.com:qbWevQEhY/rV6wa21Jaivh+Lw2AArTFwCB2J6ll4xOI=" \

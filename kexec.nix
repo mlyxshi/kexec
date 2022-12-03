@@ -6,19 +6,15 @@ let
   initrdName = "initrd-${arch}";
   kexecScriptName = "kexec-${arch}";
   kexec-musl-bin = "kexec-musl-${arch}";
-  wget-musl-bin = "wget-musl-${arch}";
 
   kexecScript = pkgs.writeScript "kexec-boot" ''
     #!/usr/bin/env bash
     set -e   
 
-    curl -L -O https://github.com/mlyxshi/kexec/releases/download/latest/${wget-musl-bin} && chmod +x ./${wget-musl-bin} 
-    # -N only download the file if it has changed
-    ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kexec-musl-bin} && chmod +x ./${kexec-musl-bin}
-    ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
-    ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
-
-  
+    echo "Downloading kexec-musl-bin" && curl -sLO https://github.com/mlyxshi/kexec/releases/download/latest/${kexec-musl-bin} && chmod +x ./${kexec-musl-bin}
+    echo "Downloading initrd" && curl -sLO https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
+    echo "Downloading kernel" && curl -sLO https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
+ 
     INITRD_TMP=$(mktemp -d --tmpdir=.)
     cd "$INITRD_TMP" 
     mkdir -p initrd/ssh && cd initrd
@@ -32,7 +28,7 @@ let
 
     for i in /etc/ssh/ssh_host_*; do cp $i ssh; done
    
-    [[ -n "$1" ]] && curl -sL -o autorun.sh "$1"
+    [[ -n "$1" ]] && curl -sLo autorun.sh "$1"
     for arg in "''${@:2}"; do echo $arg >> autorunParameters; done      #begin at the second argument
   
     find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
@@ -127,7 +123,6 @@ in
     ln -s ${config.system.build.netbootRamdisk}/initrd  $out/${initrdName}
     ln -s ${kexecScript}                                $out/${kexecScriptName}
     ln -s ${pkgs.pkgsStatic.kexec-tools}/bin/kexec      $out/${kexec-musl-bin}
-    ln -s ${pkgs.pkgsStatic.wget}/bin/wget              $out/${wget-musl-bin}
   '';
 }
 
