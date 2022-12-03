@@ -67,9 +67,17 @@ in
     set incsearch true
     set period 1
 
-    map q   quit
     map Q   quit
     map D   delete
+    cmd open $EDITOR "$f"
+  '';
+  environment.etc."xdg/nvim/init.lua".text = ''
+    -- Consistent with lf exit
+    -- ZQ all Quit Without Save
+    -- ZZ all Quit With Save
+    vim.keymap.set("n", "Q", ":qa<CR>")
+    vim.keymap.set("n", "ZQ", ":qa!<CR>")
+    vim.keymap.set("n", "ZZ", ":wa|:qa<CR>")
   '';
 
 
