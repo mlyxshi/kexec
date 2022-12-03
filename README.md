@@ -10,13 +10,13 @@ curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname
 
 #### kexec NixOS and run script automatically (optional)
 ```
-curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m) | bash -s script_url=AUTORUN_SCRIPT_URL
+curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m) | bash -s AUTORUN_SCRIPT_URL
 ```
 
 
 #### add script arguments (optional)
 ```
-curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m) | bash -s script_url=AUTORUN_SCRIPT_URL  script_args="ARG1 ARG2 ..."
+curl -sL https://github.com/mlyxshi/kexec/releases/download/latest/kexec-$(uname -m) | bash -s AUTORUN_SCRIPT_URL ARG1 ARG2 ...
 ```
 
 

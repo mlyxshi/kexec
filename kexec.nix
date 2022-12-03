@@ -18,13 +18,6 @@ let
     ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${initrdName}
     ./${wget-musl-bin} -q --show-progress -N https://github.com/mlyxshi/kexec/releases/download/latest/${kernelName}
 
-    for arg in "$@"
-    do
-      # script_args escape double quotes manually
-      [[ $arg = script_args=* ]] && arg="script_args=\"''${arg#script_args=}\""   
-      cmdScript+="$arg "
-    done
-
   
     INITRD_TMP=$(mktemp -d --tmpdir=.)
     cd "$INITRD_TMP" 
@@ -39,6 +32,14 @@ let
 
     for i in /etc/ssh/ssh_host_*; do cp $i ssh; done
 
+    
+    [[ -n "$1" ]] && curl -L -o autorun.sh "$1"
+    for arg in "''${@:2}"  #begin at the second argument
+    do
+      echo $arg >> autorunParameters
+    done
+  
+
     find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
     cd .. && cat extra.gz >> ../${initrdName}
     cd .. && rm -r "$INITRD_TMP"
@@ -48,7 +49,7 @@ let
     echo "--------------------------------------------------"
     echo "Wait..."
     echo "After SSH connection lost, ssh root@ip and enjoy NixOS!"
-    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams} $cmdScript"
+    ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}"
     ./${kexec-musl-bin} -e
   '';
 in
@@ -105,25 +106,22 @@ in
     mkdir -m 755 -p /mnt-root/etc/ssh
     install -m 400 ssh/authorized_keys /mnt-root/root/.ssh
     install -m 400 ssh/ssh_host_* /mnt-root/etc/ssh
+
+    [[ -f autorun.sh ]] && install -m 700 autorun.sh /mnt-root/etc
+    [[ -f autorunParameters ]] && install -m 700 autorunParameters /mnt-root/etc
   '';
 
   systemd.services.process-cmdline-script = {
     after = [ "network-online.target" ];
+    unitConfig.ConditionPathExists = "/etc/autorun.sh";
     script = ''
       export PATH=/run/current-system/sw/bin:$PATH
-      IFS=$'\n' #for loop split by newline, otherwise it will split by space
-
-      for opt in $(xargs -n1 -a /proc/cmdline)
-      do
-        [[ $opt = script_url=* ]] && script_url="''${opt#script_url=}" && continue
-        [[ $opt = script_args=* ]] && script_args="''${opt#script_args=}" && continue
-      done
-
-      echo $script_url
-      echo $script_args  
-      [[ -n "$script_args" ]] && script_args=$(echo "$script_args" | tr -d '"')  # remove double quotes
-
-      [[ -n "$script_url" ]] && curl -sL $script_url | bash -s $script_args
+      if [[ -f /etc/autorunParameters ]]; then
+        mapfile args < /etc/autorunParameters
+        bash /etc/autorun.sh ''${args[@]}
+      else
+        bash /etc/autorun.sh
+      fi  
     '';
     wantedBy = [ "multi-user.target" ];
   };
