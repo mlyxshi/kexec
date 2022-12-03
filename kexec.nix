@@ -31,13 +31,10 @@ let
     done
 
     for i in /etc/ssh/ssh_host_*; do cp $i ssh; done
-
-    
-    [[ -n "$1" ]] && curl -L -o autorun.sh "$1"
-    #begin at the second argument
-    for arg in "''${@:2}"; do echo $arg >> autorunParameters; done
+   
+    [[ -n "$1" ]] && curl -sL -o autorun.sh "$1"
+    for arg in "''${@:2}"; do echo $arg >> autorunParameters; done      #begin at the second argument
   
-
     find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
     cd .. && cat extra.gz >> ../${initrdName}
     cd .. && rm -r "$INITRD_TMP"
@@ -109,7 +106,7 @@ in
     [[ -f autorunParameters ]] && install -m 700 autorunParameters /mnt-root/etc
   '';
 
-  systemd.services.process-cmdline-script = {
+  systemd.services.autorun-script = {
     after = [ "network-online.target" ];
     unitConfig.ConditionPathExists = "/etc/autorun.sh";
     script = ''
