@@ -34,10 +34,8 @@ let
 
     
     [[ -n "$1" ]] && curl -L -o autorun.sh "$1"
-    for arg in "''${@:2}"  #begin at the second argument
-    do
-      echo $arg >> autorunParameters
-    done
+    #begin at the second argument
+    for arg in "''${@:2}"; do echo $arg >> autorunParameters; done
   
 
     find | cpio -o -H newc --quiet | gzip -9 > ../extra.gz
@@ -115,6 +113,7 @@ in
     after = [ "network-online.target" ];
     unitConfig.ConditionPathExists = "/etc/autorun.sh";
     script = ''
+      export PATH=/run/current-system/sw/bin:$PATH
       if [[ -f /etc/autorunParameters ]]; then
         mapfile args < /etc/autorunParameters
         bash /etc/autorun.sh ''${args[@]}
