@@ -74,6 +74,7 @@ in
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod" ];
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
 
@@ -87,6 +88,7 @@ in
   systemd.network.wait-online.anyInterface = true;
   services.getty.autologinUser = "root";
   services.openssh.enable = true;
+  security.sudo.enable = false;
 
   boot.initrd.postMountCommands = ''
     mkdir -m 700 -p /mnt-root/root/.ssh
