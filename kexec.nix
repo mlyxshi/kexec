@@ -60,6 +60,7 @@ in
     htop
     lf # Terminal File Browser
     neovim-unwrapped
+    nix-tree
   ];
 
   environment.sessionVariables.EDITOR = "nvim";
