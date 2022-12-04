@@ -9,6 +9,7 @@
         modules = [
           ./kexec.nix
           ./strip.nix
+          ./kernelModule.nix
         ];
       };
 
@@ -17,6 +18,7 @@
         modules = [
           ./kexec.nix
           ./strip.nix
+          ./kernelModule.nix
         ];
       };
     };

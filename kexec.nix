@@ -41,12 +41,6 @@ let
     ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}"
     ./${kexec-musl-bin} -e
   '';
-
-  qemuKernelModules = [ "virtio_net" "virtio_pci" "virtio_mmio" "virtio_blk" "virtio_scsi" "virtio_balloon" "virtio_console" ];
-  hypervKernelModules = [ "hv_storvsc" ];
-  commonKernelModules = [ "nvme" "ahci" "uas" ];
-  # add extra kernel modules: https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/profiles/all-hardware.nix
-  KernelModules = qemuKernelModules ++ hypervKernelModules ++ commonKernelModules;
 in
 {
 
@@ -85,7 +79,6 @@ in
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
-  boot.initrd.availableKernelModules = KernelModules;
 
   boot.kernel.sysctl."vm.swappiness" = 100;
   zramSwap.enable = true; # Enable zram, otherwise machine below 1GB RAM will OOM when evaluating nix flake config
