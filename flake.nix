@@ -8,6 +8,7 @@
         system = "x86_64-linux";
         modules = [
           ./kexec.nix
+          ./strip.nix
         ];
       };
 
@@ -15,6 +16,7 @@
         system = "aarch64-linux";
         modules = [
           ./kexec.nix
+          ./strip.nix
         ];
       };
     };

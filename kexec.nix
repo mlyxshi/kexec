@@ -51,7 +51,6 @@ in
 {
 
   imports = [
-    (modulesPath + "/profiles/minimal.nix")
     (modulesPath + "/installer/netboot/netboot.nix")
   ];
 
@@ -75,6 +74,11 @@ in
     map D   delete
     cmd open ''${{ $EDITOR "$f"}}
   '';
+  environment.shellAliases = {
+    r = "lf"; # like ranger 
+    v = "nvim";
+    ref = "_r(){nix-store -q --references $(readlink -f $(which $1))};_r";
+  };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -88,11 +92,9 @@ in
   zramSwap.memoryMax = 2 * 1024 * 1024 * 1024;
 
   networking.useNetworkd = true;
-  networking.firewall.enable = false;
   systemd.network.wait-online.anyInterface = true;
   services.getty.autologinUser = "root";
   services.openssh.enable = true;
-  security.sudo.enable = false;
 
   boot.initrd.postMountCommands = ''
     mkdir -m 700 -p /mnt-root/root/.ssh
