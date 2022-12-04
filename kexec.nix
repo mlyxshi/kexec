@@ -45,7 +45,7 @@ in
 {
 
   imports = [
-    (modulesPath + "/installer/netboot/netboot.nix")
+    ./netboot.nix
   ];
 
   system.stateVersion = "23.05";
@@ -72,7 +72,6 @@ in
   environment.shellAliases = {
     r = "lf"; # like ranger 
     v = "nvim";
-    ref = "_r(){nix-store -q --references $(readlink -f $(which $1))};_r";
   };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
