@@ -1,7 +1,7 @@
 { pkgs, lib, config, modulesPath, ... }:
 let
   kernelTarget = pkgs.hostPlatform.linux-kernel.target;
-  arch = pkgs.hostPlatform.uname.processor;  #https://github.com/NixOS/nixpkgs/blob/93de6bf9ed923bf2d0991db61c2fd127f6e984ae/lib/systems/default.nix#L103
+  arch = pkgs.hostPlatform.uname.processor; #https://github.com/NixOS/nixpkgs/blob/93de6bf9ed923bf2d0991db61c2fd127f6e984ae/lib/systems/default.nix#L103
   kernelName = "${kernelTarget}-${arch}";
   initrdName = "initrd-${arch}";
   kexecScriptName = "kexec-${arch}";
@@ -41,12 +41,17 @@ let
     ./${kexec-musl-bin} --kexec-syscall-auto --load ./${kernelName} --initrd=./${initrdName}  --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}"
     ./${kexec-musl-bin} -e
   '';
+
+  qemuKernelModules = [ "virtio_net" "virtio_pci" "virtio_mmio" "virtio_blk" "virtio_scsi" "virtio_balloon" "virtio_console" ];
+  hypervKernelModules = [ "hv_storvsc" ];
+  commonKernelModules = [ "nvme" "ahci" "uas" ];
+  # add extra kernel modules: https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/profiles/all-hardware.nix
+  KernelModules = qemuKernelModules ++ hypervKernelModules ++ commonKernelModules;
 in
 {
 
   imports = [
     (modulesPath + "/profiles/minimal.nix")
-    (modulesPath + "/profiles/all-hardware.nix")
     (modulesPath + "/installer/netboot/netboot.nix")
   ];
 
@@ -75,11 +80,12 @@ in
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
+  boot.initrd.availableKernelModules = KernelModules;
 
   boot.kernel.sysctl."vm.swappiness" = 100;
   zramSwap.enable = true; # Enable zram, otherwise machine below 1GB RAM will OOM when evaluating nix flake config
   zramSwap.memoryPercent = 200;
-  zramSwap.memoryMax= 2 * 1024 * 1024 * 1024;
+  zramSwap.memoryMax = 2 * 1024 * 1024 * 1024;
 
   networking.useNetworkd = true;
   networking.firewall.enable = false;
