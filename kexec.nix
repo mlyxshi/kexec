@@ -46,7 +46,7 @@ in
 
   imports = [
     (modulesPath + "/profiles/minimal.nix")
-    (modulesPath + "/profiles/qemu-guest.nix") # Most QEMU VPS, like Oracle
+    (modulesPath + "/profiles/all-hardware.nix")
     (modulesPath + "/installer/netboot/netboot.nix")
   ];
 
@@ -73,8 +73,6 @@ in
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  boot.initrd.kernelModules = [ "hv_storvsc" ]; # Important for Azure(Hyper-v)
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod" ];
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.supportedFilesystems = [ "btrfs" ];
 
