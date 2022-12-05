@@ -9,7 +9,7 @@
 
   fileSystems."/nix/.ro-store" = {
     fsType = "squashfs";
-    device = "../nix-store.squashfs";
+    device = "/nix-store.squashfs";
     options = [ "loop" ];
     neededForBoot = true;
   };
@@ -59,8 +59,6 @@
 
   # Create the initrd
   system.build.netbootRamdisk = pkgs.makeInitrdNG {
-    # config.system.build.initialRamdisk is compressed with zstd
-    # config.system.build.squashfsStore is compressed with zstd
     compressor = "zstd";
     prepend = [ "${config.system.build.initialRamdisk}/initrd.zst" ];
 

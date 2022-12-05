@@ -3,7 +3,7 @@ let
   kernelTarget = pkgs.hostPlatform.linux-kernel.target;
   arch = pkgs.hostPlatform.uname.processor; #https://github.com/NixOS/nixpkgs/blob/93de6bf9ed923bf2d0991db61c2fd127f6e984ae/lib/systems/default.nix#L103
   kernelName = "${kernelTarget}-${arch}";
-  initrdName = "initrd-${arch}";
+  initrdName = "initrd-${arch}.zst";
   kexecScriptName = "kexec-${arch}";
   kexec-musl-bin = "kexec-musl-${arch}";
 
@@ -126,7 +126,7 @@ in
   system.build.kexec = pkgs.runCommand "buildkexec" { } ''
     mkdir -p $out
     ln -s ${config.system.build.kernel}/${kernelTarget}     $out/${kernelName}
-    ln -s ${config.system.build.netbootRamdisk}/initrd      $out/${initrdName}
+    ln -s ${config.system.build.netbootRamdisk}/initrd.zst      $out/${initrdName}
     ln -s ${kexecScript}                                    $out/${kexecScriptName}
     ln -s ${pkgs.pkgsStatic.kexec-tools}/bin/kexec          $out/${kexec-musl-bin}
   '';
