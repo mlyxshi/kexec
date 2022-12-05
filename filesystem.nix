@@ -9,7 +9,7 @@
 
   fileSystems."/nix/.ro-store" = {
     fsType = "squashfs";
-    device = "/nix-store.squashfs";
+    device = "../nix-store.squashfs";
     options = [ "loop" ];
     neededForBoot = true;
   };
