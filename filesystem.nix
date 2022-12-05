@@ -7,6 +7,7 @@
 
   fileSystems."/nix/.ro-store" = {
     fsType = "squashfs";
+    # Be cafeful about the device path: https://github.com/NixOS/nixpkgs/blob/bc85ef815830014d9deabb0803d46a78c832f944/nixos/modules/system/boot/stage-1-init.sh#L520-L540
     device = "nix-store.squashfs";
     options = [ "loop" ];
     neededForBoot = true;
@@ -70,10 +71,6 @@
   boot.postBootCommands = ''
     # After booting, register the contents of the Nix store in the Nix database in the tmpfs.
     ${config.nix.package}/bin/nix-store --load-db < /nix/store/nix-path-registration
-
-    # nixos-rebuild also requires a "system" profile and an /etc/NIXOS tag.
-    touch /etc/NIXOS
-    ${config.nix.package}/bin/nix-env -p /nix/var/nix/profiles/system --set /run/current-system
   '';
 }
 
