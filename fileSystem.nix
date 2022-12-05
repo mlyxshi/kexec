@@ -41,7 +41,7 @@
   boot.initrd.compressor = "zstd";
 
 
-  # Create the squashfs image that contains the Nix store.
+  # Create the squashfs image: System Closure Nix Store.
   system.build.squashfsStore = pkgs.runCommand "nix-store.squashfs" { } ''
     closurePaths=${pkgs.closureInfo { rootPaths = config.system.build.toplevel; }}/store-paths
     ${pkgs.squashfsTools}/bin/mksquashfs $(cat $closurePaths) $out -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
@@ -63,6 +63,7 @@
 
 # References
 # https://www.deepanseeralan.com/tech/some-notes-on-filesystems-part2/
+# https://github.com/NixOS/nixpkgs/blob/master/pkgs/build-support/kernel/make-initrd-ng.nix
 
 # wget https://github.com/mlyxshi/kexec/releases/download/latest/initrd-x86_64.zst
 # zstd -d initrd-x86_64.zst
