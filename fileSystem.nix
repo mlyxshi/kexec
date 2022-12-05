@@ -42,8 +42,7 @@
 
 
   # Create the squashfs image that contains the Nix store.
-  system.build.squashfsStore = pkgs.runCommand "nix-store.squashfs" { } ''
-    mkdir -p $out
+  system.build.squashfsStore = pkgs.runCommand "nix-store-squashfs" { } ''
     closurePaths=${pkgs.closureInfo { rootPaths = config.system.build.toplevel; }}/store-paths
     ${pkgs.squashfsTools}/bin/mksquashfs $(cat $closurePaths) $out -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
   '';
