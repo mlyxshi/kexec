@@ -61,7 +61,7 @@
   system.build.netbootRamdisk = pkgs.makeInitrdNG {
     # config.system.build.initialRamdisk is compressed with zstd
     # config.system.build.squashfsStore is compressed with zstd
-    compressor = "cat";
+    compressor = "zstd";
     prepend = [ "${config.system.build.initialRamdisk}/initrd.zst" ];
 
     contents = [
