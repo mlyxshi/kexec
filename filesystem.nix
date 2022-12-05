@@ -51,7 +51,7 @@
 
   # Create the initrd
   system.build.netbootRamdisk = pkgs.makeInitrdNG {
-    compressor = "zstd";
+    compressor = "cat";
     prepend = [ "${config.system.build.initialRamdisk}/initrd.zst" ];
 
     contents = [
