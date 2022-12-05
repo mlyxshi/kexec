@@ -2,10 +2,6 @@
 # configuration.
 
 { config, lib, pkgs, ... }: {
-
-  # kexec don't need a bootloader
-  boot.loader.grub.enable = false;
-
   fileSystems."/" = {
     fsType = "tmpfs";
     options = [ "mode=0755" ];
@@ -40,9 +36,11 @@
     ];
   };
 
+  # kexec don't need a bootloader
+  boot.loader.grub.enable = false;
   boot.initrd.availableKernelModules = [ "squashfs" "overlay" ];
-
   boot.initrd.kernelModules = [ "loop" "overlay" ];
+  boot.initrd.compressor = "zstd";
 
 
   # Create the squashfs image that contains the Nix store.
@@ -54,13 +52,14 @@
   # Create the initrd
   system.build.netbootRamdisk = pkgs.makeInitrdNG {
     compressor = "zstd";
-    prepend = [ "${config.system.build.initialRamdisk}/initrd" ];
+    prepend = [ "${config.system.build.initialRamdisk}/initrd.zst" ];
 
-    contents =
-      [{
+    contents = [
+      {
         object = config.system.build.squashfsStore;
         symlink = "/nix-store.squashfs";
-      }];
+      }
+    ];
   };
 
 
