@@ -50,7 +50,7 @@ in
     ./kernelModule.nix
   ];
 
-  system.stateVersion = "23.05";
+  system.stateVersion = lib.trivial.release;
 
   environment.systemPackages = with pkgs; [
     htop

@@ -37,7 +37,7 @@
 
   # kexec don't need bootloader
   boot.loader.grub.enable = false;
-  boot.initrd.kernelModules = [ "squashfs" "overlay" "loop" ];
+  boot.initrd.kernelModules = [ "squashfs" "overlay" ];
   boot.initrd.compressor = "zstd";
 
 
