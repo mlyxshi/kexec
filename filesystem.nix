@@ -68,10 +68,10 @@
   };
 
 
-  boot.postBootCommands = ''
-    # After booting, register the contents of the Nix store in the Nix database in the tmpfs.
-    ${config.nix.package}/bin/nix-store --load-db < /nix/store/nix-path-registration
-  '';
+  # boot.postBootCommands = ''
+  #   # After booting, register the contents of the Nix store in the Nix database in the tmpfs.
+  #   ${config.nix.package}/bin/nix-store --load-db < /nix/store/nix-path-registration
+  # '';
 }
 
 # References
