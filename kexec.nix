@@ -45,7 +45,9 @@ in
 {
 
   imports = [
-    ./netboot.nix
+    ./filesystem.nix
+    ./strip.nix
+    ./kernelModule.nix
   ];
 
   system.stateVersion = "23.05";
