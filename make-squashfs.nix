@@ -17,7 +17,7 @@ stdenv.mkDerivation {
       cp $closureInfo/registration nix-path-registration
       # Generate the squashfs image.
       mksquashfs nix-path-registration $(cat $closureInfo/store-paths) $out \
-        -no-hardlinks -keep-as-directory -all-root -b 1048576 -comp "zstd -Xcompression-level 15" \
+        -no-hardlinks -keep-as-directory -all-root -b 1048576 -comp zstd \
         -processors $NIX_BUILD_CORES
     '';
 }
