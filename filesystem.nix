@@ -1,6 +1,4 @@
-# This module creates netboot media containing the given NixOS
-# configuration.
-
+# https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/netboot/netboot.nix
 { config, lib, pkgs, ... }: {
   fileSystems."/" = {
     fsType = "tmpfs";
@@ -9,7 +7,7 @@
 
   fileSystems."/nix/.ro-store" = {
     fsType = "squashfs";
-    device = "../nix-store.squashfs";
+    device = "nix-store.squashfs";
     options = [ "loop" ];
     neededForBoot = true;
   };
@@ -36,7 +34,7 @@
     ];
   };
 
-  # kexec don't need a bootloader
+  # kexec don't need bootloader
   boot.loader.grub.enable = false;
   boot.initrd.availableKernelModules = [ "squashfs" "overlay" ];
   boot.initrd.kernelModules = [ "loop" "overlay" ];
@@ -51,17 +49,15 @@
       closureInfo=${pkgs.closureInfo { rootPaths = config.system.build.toplevel; }}
       # Also include a manifest of the closures in a format suitable for nix-store --load-db.
       cp $closureInfo/registration nix-path-registration
-      mksquashfs nix-path-registration $(cat $closureInfo/store-paths) $out \
-        -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
+      mksquashfs nix-path-registration $(cat $closureInfo/store-paths) $out -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
     '';
   };
 
 
-  # Create the initrd
+  # Create the netbootRamdisk
   system.build.netbootRamdisk = pkgs.makeInitrdNG {
     compressor = "zstd";
     prepend = [ "${config.system.build.initialRamdisk}/initrd.zst" ];
-
     contents = [
       {
         object = config.system.build.squashfsStore;
@@ -71,21 +67,14 @@
   };
 
 
+  boot.postBootCommands = ''
+    # After booting, register the contents of the Nix store in the Nix database in the tmpfs.
+    ${config.nix.package}/bin/nix-store --load-db < /nix/store/nix-path-registration
 
-  boot.postBootCommands =
-    ''
-      # After booting, register the contents of the Nix store
-      # in the Nix database in the tmpfs.
-      ${config.nix.package}/bin/nix-store --load-db < /nix/store/nix-path-registration
-
-      # nixos-rebuild also requires a "system" profile and an
-      # /etc/NIXOS tag.
-      touch /etc/NIXOS
-      ${config.nix.package}/bin/nix-env -p /nix/var/nix/profiles/system --set /run/current-system
-    '';
-
-
-
+    # nixos-rebuild also requires a "system" profile and an /etc/NIXOS tag.
+    touch /etc/NIXOS
+    ${config.nix.package}/bin/nix-env -p /nix/var/nix/profiles/system --set /run/current-system
+  '';
 }
 
 # References
