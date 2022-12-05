@@ -45,7 +45,7 @@
   system.build.squashfsStore = pkgs.runCommand "nix-store.squashfs" { } ''
     mkdir -p $out
     closurePaths=${pkgs.closureInfo { rootPaths = config.system.build.toplevel; }}/store-paths
-    ${pkgs.squashfsTools}/bin/mksquashfs $(cat closurePaths) $out -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
+    ${pkgs.squashfsTools}/bin/mksquashfs $(cat $closurePaths) $out -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
   '';
 
   # Create the netbootRamdisk
