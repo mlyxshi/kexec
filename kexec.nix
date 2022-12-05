@@ -45,7 +45,7 @@ in
 {
 
   imports = [
-    ./filesystem.nix
+    ./fileSystem.nix
     ./strip.nix
     ./kernelModule.nix
   ];
@@ -105,6 +105,7 @@ in
     vim.keymap.set("n", "Q", ":qa<CR>")
     vim.keymap.set("n", "ZQ", ":qa!<CR>")
     vim.keymap.set("n", "ZZ", ":wa|:qa<CR>")
+    vim.opt.cmdheight = 0
     EOF
   '';
 
@@ -125,10 +126,10 @@ in
 
   system.build.kexec = pkgs.runCommand "buildkexec" { } ''
     mkdir -p $out
-    ln -s ${config.system.build.kernel}/${kernelTarget}     $out/${kernelName}
+    ln -s ${config.system.build.kernel}/${kernelTarget}         $out/${kernelName}
     ln -s ${config.system.build.netbootRamdisk}/initrd.zst      $out/${initrdName}
-    ln -s ${kexecScript}                                    $out/${kexecScriptName}
-    ln -s ${pkgs.pkgsStatic.kexec-tools}/bin/kexec          $out/${kexec-musl-bin}
+    ln -s ${kexecScript}                                        $out/${kexecScriptName}
+    ln -s ${pkgs.pkgsStatic.kexec-tools}/bin/kexec              $out/${kexec-musl-bin}
   '';
 }
 

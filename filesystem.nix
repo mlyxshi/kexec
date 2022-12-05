@@ -37,23 +37,16 @@
 
   # kexec don't need bootloader
   boot.loader.grub.enable = false;
-  boot.initrd.availableKernelModules = [ "squashfs" "overlay" ];
-  boot.initrd.kernelModules = [ "loop" "overlay" ];
+  boot.initrd.kernelModules = [ "squashfs" "overlay" "loop" ];
   boot.initrd.compressor = "zstd";
 
 
   # Create the squashfs image that contains the Nix store.
-  system.build.squashfsStore = pkgs.stdenv.mkDerivation {
-    name = "nix-store.squashfs";
-    nativeBuildInputs = [ pkgs.squashfsTools ];
-    buildCommand = ''
-      closureInfo=${pkgs.closureInfo { rootPaths = config.system.build.toplevel; }}
-      # Also include a manifest of the closures in a format suitable for nix-store --load-db.
-      cp $closureInfo/registration nix-path-registration
-      mksquashfs nix-path-registration $(cat $closureInfo/store-paths) $out -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
-    '';
-  };
-
+  system.build.squashfsStore = pkgs.runCommand "nix-store.squashfs" { } ''
+    mkdir -p $out
+    closurePaths=${pkgs.closureInfo { rootPaths = config.system.build.toplevel; }}/store-paths
+    ${pkgs.squashfsTools}/bin/mksquashfs $(cat closurePaths) $out -no-hardlinks -keep-as-directory -all-root -b 1M -comp zstd -Xcompression-level 19
+  '';
 
   # Create the netbootRamdisk
   system.build.netbootRamdisk = pkgs.makeInitrdNG {
@@ -67,11 +60,6 @@
     ];
   };
 
-
-  # boot.postBootCommands = ''
-  #   # After booting, register the contents of the Nix store in the Nix database in the tmpfs.
-  #   ${config.nix.package}/bin/nix-store --load-db < /nix/store/nix-path-registration
-  # '';
 }
 
 # References
