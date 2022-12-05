@@ -63,3 +63,9 @@
 
 # References
 # https://www.deepanseeralan.com/tech/some-notes-on-filesystems-part2/
+
+# wget https://github.com/mlyxshi/kexec/releases/download/latest/initrd-x86_64.zst
+# zstd -d initrd-x86_64.zst
+# binwalk initrd-x86_64
+# ASCII CPIO archives consist of multiple entries, ending with an entry named 'TRAILER'.
+# (cpio -idv; cpio -idv) < initrd-x86_64
