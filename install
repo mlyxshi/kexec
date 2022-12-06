@@ -34,6 +34,6 @@ nixos-install --root /mnt --flake $FLAKE --no-channel-copy --no-root-passwd \
 
 for i in /etc/ssh/ssh_host_*; do cp $i /mnt/etc/ssh; done
 
-[[ -n "$3" && -n "$4" ]] && curl -X POST "https://api.telegram.org/bot$TG_TOKEN/sendMessage" -d chat_id=$TG_ID -d text="<b>Install NixOS Completed</b>%0A$HOST" -d parse_mode=html
+[[ -n "$3" && -n "$4" ]] && curl -X POST "https://api.telegram.org/bot$TG_TOKEN/sendMessage" -d chat_id=$TG_ID -d text="<b>Install NixOS Completed</b>%0A$FLAKE" -d parse_mode=html
 
 reboot
