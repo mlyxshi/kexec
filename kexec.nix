@@ -79,8 +79,9 @@ in
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.initrd.systemd.enable = true;
   boot.supportedFilesystems = [ "btrfs" ];
+  # postMountCommands currently only works on initrd without systemd
+  # boot.initrd.systemd.enable = true;
 
   boot.kernel.sysctl."vm.swappiness" = 100;
   zramSwap.enable = true; # Enable zram, otherwise machine below 1GB RAM will OOM when evaluating nix flake config
