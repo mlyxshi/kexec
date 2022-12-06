@@ -71,6 +71,14 @@ in
     map D   delete
     cmd open ''${{ $EDITOR "$f"}}
   '';
+  environment.etc."xdg/nvim/sysinit.vim".text = ''
+    lua <<EOF
+    vim.keymap.set("n", "Q", ":qa<CR>")
+    vim.keymap.set("n", "ZQ", ":qa!<CR>")
+    vim.keymap.set("n", "ZZ", ":wa|:qa<CR>")
+    vim.opt.cmdheight = 0
+    EOF
+  '';
   environment.shellAliases = {
     r = "lf"; # like ranger 
     v = "nvim";
@@ -101,14 +109,6 @@ in
 
     [[ -f autorun.sh ]] && install -m 700 autorun.sh /mnt-root/etc
     [[ -f autorunParameters ]] && install -m 700 autorunParameters /mnt-root/etc
-
-    mkdir -p /mnt-root/root/.config/nvim/
-    cat > /mnt-root/root/.config/nvim/init.lua  <<EOF
-    vim.keymap.set("n", "Q", ":qa<CR>")
-    vim.keymap.set("n", "ZQ", ":qa!<CR>")
-    vim.keymap.set("n", "ZZ", ":wa|:qa<CR>")
-    vim.opt.cmdheight = 0
-    EOF
   '';
 
   systemd.services.autorun-script = {
