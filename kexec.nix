@@ -79,6 +79,7 @@ in
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.initrd.systemd.enable = true;
   boot.supportedFilesystems = [ "btrfs" ];
 
   boot.kernel.sysctl."vm.swappiness" = 100;
