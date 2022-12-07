@@ -26,15 +26,11 @@ mount /dev/sda1 /mnt/boot
 
 [[ -n "$2" ]] && mkdir -p /mnt/var/lib/age/ && curl -sLo /mnt/var/lib/age/sshkey "$KEY_URL"
 
-
-mkdir -p /mnt/{etc,tmp}
-touch /mnt/etc/NIXOS
-
-nix build --store /mnt --profile /mnt/nix/var/nix/profiles/system  \
-github:mlyxshi/flake#nixosConfigurations.$HOST.config.system.build.toplevel \
+nix build --store /mnt --profile /mnt/nix/var/nix/profiles/system  github:mlyxshi/flake#nixosConfigurations.$HOST.config.system.build.toplevel \
 --extra-trusted-public-keys "cache.mlyxshi.com:qbWevQEhY/rV6wa21Jaivh+Lw2AArTFwCB2J6ll4xOI=" \
 --extra-substituters "http://cache.mlyxshi.com" -v
 
+mkdir -p /mnt/etc && touch /mnt/etc/NIXOS
 NIXOS_INSTALL_BOOTLOADER=1 nixos-enter --root /mnt -- /run/current-system/bin/switch-to-configuration boot
 
 for i in /etc/ssh/ssh_host_*; do cp $i /mnt/etc/ssh; done
