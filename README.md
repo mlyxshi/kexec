@@ -1,3 +1,6 @@
+# This repo is deprecated
+Use https://github.com/dep-sys/nix-dabei instead
+
 ## Intro
 - Require script to be run as root or sudo
 - Ensure `/home/$SUDO_USER/.ssh/authorized_keys` or `/root/.ssh/authorized_keys` or `/etc/ssh/authorized_keys.d/root` contains your public SSH key.
